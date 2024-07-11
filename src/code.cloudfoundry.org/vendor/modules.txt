@@ -499,6 +499,9 @@ github.com/testcontainers/testcontainers-go/wait
 # github.com/testcontainers/testcontainers-go/modules/mysql v0.32.0
 ## explicit; go 1.21
 github.com/testcontainers/testcontainers-go/modules/mysql
+# github.com/testcontainers/testcontainers-go/modules/postgres v0.32.0
+## explicit; go 1.21
+github.com/testcontainers/testcontainers-go/modules/postgres
 # github.com/tklauser/go-sysconf v0.3.12
 ## explicit; go 1.13
 github.com/tklauser/go-sysconf

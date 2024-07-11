@@ -40,6 +40,7 @@ require (
 	github.com/tedsuo/ifrit v0.0.0-20230516164442-7862c310ad26
 	github.com/tedsuo/rata v1.0.0
 	github.com/testcontainers/testcontainers-go/modules/mysql v0.32.0
+	github.com/testcontainers/testcontainers-go/modules/postgres v0.32.0
 	github.com/uber-go/zap v1.27.0
 	github.com/urfave/cli v1.22.15
 	github.com/urfave/negroni/v3 v3.1.1
