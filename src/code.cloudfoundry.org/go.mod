@@ -8,8 +8,6 @@ replace github.com/uber-go/zap => github.com/uber-go/zap v0.0.0-20161222040304-a
 
 replace github.com/uber-go/atomic => github.com/uber-go/atomic v1.1.0
 
-replace github.com/cactus/go-statsd-client => github.com/cactus/go-statsd-client v2.0.2-0.20150911070441-6fa055a7b594+incompatible
-
 require (
 	code.cloudfoundry.org/bbs v0.0.0-20240717173038-096d0e1a7e95
 	code.cloudfoundry.org/cfhttp/v2 v2.1.0
@@ -22,7 +20,7 @@ require (
 	code.cloudfoundry.org/locket v0.0.0-20240521151413-b344fdd15d03
 	code.cloudfoundry.org/tlsconfig v0.0.0-20240712175922-ffce9516cec8
 	github.com/armon/go-proxyproto v0.1.0
-	github.com/cactus/go-statsd-client v3.2.1+incompatible
+	github.com/cactus/go-statsd-client/v5 v5.1.0
 	github.com/cloudfoundry-community/go-uaa v0.3.3
 	github.com/cloudfoundry/cf-routing-test-helpers v0.0.0-20240304203209-3404f81a986b
 	github.com/cloudfoundry/cf-test-helpers/v2 v2.9.0
