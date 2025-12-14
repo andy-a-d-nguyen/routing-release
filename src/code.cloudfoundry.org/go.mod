@@ -1,8 +1,6 @@
 module code.cloudfoundry.org
 
-go 1.24.0
-
-toolchain go1.24.2
+go 1.24.9
 
 replace github.com/cactus/go-statsd-client => github.com/cactus/go-statsd-client v2.0.2-0.20150911070441-6fa055a7b594+incompatible
 
@@ -10,7 +8,7 @@ require (
 	code.cloudfoundry.org/cfhttp/v2 v2.63.0
 	code.cloudfoundry.org/clock v1.55.0
 	code.cloudfoundry.org/debugserver v0.77.0
-	code.cloudfoundry.org/diego-logging-client v0.81.0
+	code.cloudfoundry.org/diego-logging-client v0.82.0
 	code.cloudfoundry.org/eventhub v0.58.0
 	code.cloudfoundry.org/go-loggregator/v9 v9.2.1
 	code.cloudfoundry.org/go-metric-registry v0.0.0-20251126124006-751f54e6f9aa
@@ -33,8 +31,8 @@ require (
 	github.com/nats-io/nats-server/v2 v2.12.2
 	github.com/nats-io/nats.go v1.47.0
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
-	github.com/onsi/ginkgo/v2 v2.27.2
-	github.com/onsi/gomega v1.38.2
+	github.com/onsi/ginkgo/v2 v2.27.3
+	github.com/onsi/gomega v1.38.3
 	github.com/openzipkin/zipkin-go v0.4.3
 	github.com/rcrowley/go-metrics v0.0.0-20250401214520-65e299d6c5c9
 	github.com/tedsuo/ifrit v0.0.0-20230516164442-7862c310ad26
@@ -42,20 +40,20 @@ require (
 	github.com/urfave/cli v1.22.17
 	github.com/urfave/negroni/v3 v3.1.1
 	github.com/vito/go-sse v1.1.3
-	go.step.sm/crypto v0.74.0
+	go.step.sm/crypto v0.75.0
 	go.uber.org/zap v1.27.1
 	go.uber.org/zap/exp v0.3.0
-	golang.org/x/crypto v0.45.0
-	golang.org/x/net v0.47.0
-	golang.org/x/oauth2 v0.33.0
-	golang.org/x/tools v0.39.0
+	golang.org/x/crypto v0.46.0
+	golang.org/x/net v0.48.0
+	golang.org/x/oauth2 v0.34.0
+	golang.org/x/tools v0.40.0
 	google.golang.org/grpc v1.77.0
-	google.golang.org/protobuf v1.36.10
+	google.golang.org/protobuf v1.36.11
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
-	code.cloudfoundry.org/bbs v0.0.0-20251117222647-2ba9ab4f8077 // indirect
+	code.cloudfoundry.org/bbs v0.0.0-20251213000348-62ea4fbbcea4 // indirect
 	code.cloudfoundry.org/durationjson v0.58.0 // indirect
 	code.cloudfoundry.org/go-diodes v0.0.0-20251124091730-becfb70ab838 // indirect
 	code.cloudfoundry.org/inigo v0.0.0-20210615140442-4bdc4f6e44d5 // indirect
@@ -75,14 +73,14 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/go-tpm v0.9.7 // indirect
-	github.com/google/pprof v0.0.0-20251114195745-4902fdda35c8 // indirect
+	github.com/google/pprof v0.0.0-20251213031049-b05bdaca462f // indirect
 	github.com/honeycombio/libhoney-go v1.26.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/pgx/v5 v5.7.6 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
-	github.com/klauspost/compress v1.18.1 // indirect
+	github.com/klauspost/compress v1.18.2 // indirect
 	github.com/minio/highwayhash v1.0.4-0.20251030100505-070ab1a87a76 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/nats-io/jwt/v2 v2.8.0 // indirect
@@ -101,11 +99,11 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/mod v0.30.0 // indirect
-	golang.org/x/sync v0.18.0 // indirect
-	golang.org/x/sys v0.38.0 // indirect
-	golang.org/x/text v0.31.0 // indirect
+	golang.org/x/mod v0.31.0 // indirect
+	golang.org/x/sync v0.19.0 // indirect
+	golang.org/x/sys v0.39.0 // indirect
+	golang.org/x/text v0.32.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20251124214823-79d6a2a48846 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20251213004720-97cd9d5aeac2 // indirect
 	gopkg.in/alexcesaro/statsd.v2 v2.0.0 // indirect
 )
