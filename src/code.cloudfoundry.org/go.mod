@@ -5,31 +5,31 @@ go 1.24.9
 replace github.com/cactus/go-statsd-client => github.com/cactus/go-statsd-client v2.0.2-0.20150911070441-6fa055a7b594+incompatible
 
 require (
-	code.cloudfoundry.org/cfhttp/v2 v2.63.0
-	code.cloudfoundry.org/clock v1.55.0
-	code.cloudfoundry.org/debugserver v0.77.0
-	code.cloudfoundry.org/diego-logging-client v0.82.0
-	code.cloudfoundry.org/eventhub v0.58.0
+	code.cloudfoundry.org/cfhttp/v2 v2.64.0
+	code.cloudfoundry.org/clock v1.56.0
+	code.cloudfoundry.org/debugserver v0.78.0
+	code.cloudfoundry.org/diego-logging-client v0.83.0
+	code.cloudfoundry.org/eventhub v0.59.0
 	code.cloudfoundry.org/go-loggregator/v9 v9.2.1
-	code.cloudfoundry.org/go-metric-registry v0.0.0-20251126124006-751f54e6f9aa
-	code.cloudfoundry.org/lager/v3 v3.55.0
-	code.cloudfoundry.org/localip v0.57.0
+	code.cloudfoundry.org/go-metric-registry v0.0.0-20251217144704-dc6bced22a33
+	code.cloudfoundry.org/lager/v3 v3.56.0
+	code.cloudfoundry.org/localip v0.58.0
 	code.cloudfoundry.org/locket v0.0.0-20251117222557-be612341b29d
-	code.cloudfoundry.org/tlsconfig v0.41.0
+	code.cloudfoundry.org/tlsconfig v0.42.0
 	github.com/armon/go-proxyproto v0.1.0
 	github.com/cactus/go-statsd-client v3.2.1+incompatible
 	github.com/cloudfoundry-community/go-uaa v0.3.5
 	github.com/cloudfoundry/cf-test-helpers/v2 v2.13.0
 	github.com/cloudfoundry/custom-cats-reporters v0.0.2
 	github.com/cloudfoundry/dropsonde v1.1.0
-	github.com/cloudfoundry/sonde-go v0.0.0-20251124090431-33e3494ff82b
+	github.com/cloudfoundry/sonde-go v0.0.0-20251217143644-d1670a435f2a
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/jinzhu/gorm v1.9.16
 	github.com/kisielk/errcheck v1.9.0
 	github.com/lib/pq v1.10.9
-	github.com/nats-io/nats-server/v2 v2.12.2
-	github.com/nats-io/nats.go v1.47.0
+	github.com/nats-io/nats-server/v2 v2.12.3
+	github.com/nats-io/nats.go v1.48.0
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
 	github.com/onsi/ginkgo/v2 v2.27.3
 	github.com/onsi/gomega v1.38.3
@@ -53,9 +53,9 @@ require (
 )
 
 require (
-	code.cloudfoundry.org/bbs v0.0.0-20251213000348-62ea4fbbcea4 // indirect
-	code.cloudfoundry.org/durationjson v0.58.0 // indirect
-	code.cloudfoundry.org/go-diodes v0.0.0-20251124091730-becfb70ab838 // indirect
+	code.cloudfoundry.org/bbs v0.0.0-20251217153307-594acdbd18f6 // indirect
+	code.cloudfoundry.org/durationjson v0.59.0 // indirect
+	code.cloudfoundry.org/go-diodes v0.0.0-20251217145408-467f62baff7d // indirect
 	code.cloudfoundry.org/inigo v0.0.0-20210615140442-4bdc4f6e44d5 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/Masterminds/semver/v3 v3.4.0 // indirect
