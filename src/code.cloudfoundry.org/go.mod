@@ -7,8 +7,8 @@ replace github.com/cactus/go-statsd-client => github.com/cactus/go-statsd-client
 require (
 	code.cloudfoundry.org/cfhttp/v2 v2.64.0
 	code.cloudfoundry.org/clock v1.56.0
-	code.cloudfoundry.org/debugserver v0.78.0
-	code.cloudfoundry.org/diego-logging-client v0.83.0
+	code.cloudfoundry.org/debugserver v0.79.0
+	code.cloudfoundry.org/diego-logging-client v0.84.0
 	code.cloudfoundry.org/eventhub v0.59.0
 	code.cloudfoundry.org/go-loggregator/v9 v9.2.1
 	code.cloudfoundry.org/go-metric-registry v0.0.0-20251217144704-dc6bced22a33
@@ -47,7 +47,7 @@ require (
 	golang.org/x/net v0.48.0
 	golang.org/x/oauth2 v0.34.0
 	golang.org/x/tools v0.40.0
-	google.golang.org/grpc v1.77.0
+	google.golang.org/grpc v1.78.0
 	google.golang.org/protobuf v1.36.11
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -77,7 +77,7 @@ require (
 	github.com/honeycombio/libhoney-go v1.26.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
-	github.com/jackc/pgx/v5 v5.7.6 // indirect
+	github.com/jackc/pgx/v5 v5.8.0 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/klauspost/compress v1.18.2 // indirect
@@ -104,6 +104,6 @@ require (
 	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/text v0.32.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20251213004720-97cd9d5aeac2 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20251222181119-0a764e51fe1b // indirect
 	gopkg.in/alexcesaro/statsd.v2 v2.0.0 // indirect
 )
