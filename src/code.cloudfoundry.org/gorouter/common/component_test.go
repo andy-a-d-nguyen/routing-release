@@ -171,6 +171,7 @@ var _ = Describe("Component", func() {
 			natsRunner = test_util.NewNATSRunner(int(natsPort))
 			natsRunner.Start()
 			mbusClient = natsRunner.MessageBus
+			mbusClient.Opts.SkipSubjectValidation = true
 		})
 
 		AfterEach(func() {
