@@ -8,7 +8,7 @@ require (
 	code.cloudfoundry.org/cfhttp/v2 v2.64.0
 	code.cloudfoundry.org/clock v1.56.0
 	code.cloudfoundry.org/debugserver v0.79.0
-	code.cloudfoundry.org/diego-logging-client v0.84.0
+	code.cloudfoundry.org/diego-logging-client v0.85.0
 	code.cloudfoundry.org/eventhub v0.59.0
 	code.cloudfoundry.org/go-loggregator/v9 v9.2.1
 	code.cloudfoundry.org/go-metric-registry v0.0.0-20251217144704-dc6bced22a33
@@ -72,7 +72,7 @@ require (
 	github.com/go-test/deep v1.0.7 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
-	github.com/google/go-tpm v0.9.7 // indirect
+	github.com/google/go-tpm v0.9.8 // indirect
 	github.com/google/pprof v0.0.0-20251213031049-b05bdaca462f // indirect
 	github.com/honeycombio/libhoney-go v1.26.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
