@@ -12,6 +12,7 @@ uris:
 - some_uri1
 - some_uri2
 server_cert_domain_san: some.service.internal
+sni_rewrite_san: some.rewrite.internal
 route_service_url: https://route-service.example.com
 router_group: some-router-group
 protocol: http1
