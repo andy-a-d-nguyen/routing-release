@@ -234,6 +234,11 @@ func (u *updater) toRoutingTableEntry(logger lager.Logger, routeMapping apimodel
 		hostname = *routeMapping.SniHostname
 	}
 
+	var sniRewriteHostname string
+	if routeMapping.SniRewriteHostname != nil {
+		sniRewriteHostname = *routeMapping.SniRewriteHostname
+	}
+
 	routingKey := models.RoutingKey{
 		Port:        routeMapping.ExternalPort,
 		SniHostname: models.SniHostname(hostname),
@@ -253,6 +258,7 @@ func (u *updater) toRoutingTableEntry(logger lager.Logger, routeMapping apimodel
 		TTL:                  ttl,
 		TerminateFrontendTLS: routeMapping.TerminateFrontendTLS,
 		ALPNs:                routeMapping.ALPNs,
+		SniRewriteHostname:   sniRewriteHostname, // Extract internal SNI hostname from route mapping
 	}
 	return routingKey, backendServerInfo
 }

@@ -67,6 +67,7 @@ type RouteSchema struct {
 	HealthCheck          *HealthCheckSchema `json:"health_check,omitempty" yaml:"health_check,omitempty"`
 	ServerCertDomainSAN  string             `json:"server_cert_domain_san,omitempty" yaml:"server_cert_domain_san,omitempty"`
 	SniRoutableSan       string             `json:"sni_routable_san,omitempty" yaml:"sni_routable_san,omitempty"`
+	SniRewriteSan        string             `json:"sni_rewrite_san,omitempty" yaml:"sni_rewrite_san,omitempty"`
 	TerminateFrontendTLS bool               `json:"terminate_frontend_tls,omitempty" yaml:"terminate_frontend_tls,omitempty"`
 	EnableBackendTLS     bool               `json:"enable_backend_tls,omitempty" yaml:"enable_backend_tls,omitempty"`
 	ALPNs                []string           `json:"alpns,omitempty" yaml:"alpns,omitempty"`
@@ -150,9 +151,10 @@ type Route struct {
 	Host                 string
 	ExternalPort         *uint16
 	RouteServiceUrl      string
-	RegistrationInterval time.Duration
+	RegistrationInterval   time.Duration
 	HealthCheck          *HealthCheck
 	ServerCertDomainSAN  string
+	SniRewriteSan        string
 	TerminateFrontendTLS bool
 	ALPNs                []string
 	EnableBackendTLS     bool
@@ -357,6 +359,7 @@ func RouteFromSchema(r RouteSchema, index int, host string) (*Route, error) {
 		ExternalPort:         r.ExternalPort,
 		RouteServiceUrl:      r.RouteServiceUrl,
 		ServerCertDomainSAN:  r.ServerCertDomainSAN,
+		SniRewriteSan:        r.SniRewriteSan,
 		RegistrationInterval: registrationInterval,
 		HealthCheck:          healthCheck,
 		TerminateFrontendTLS: r.TerminateFrontendTLS,

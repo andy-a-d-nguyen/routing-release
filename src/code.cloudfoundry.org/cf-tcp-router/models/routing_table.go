@@ -25,6 +25,7 @@ type BackendServerInfo struct {
 	TTL                  int
 	TerminateFrontendTLS bool
 	ALPNs                string
+	SniRewriteHostname  string // SNI hostname to send to backend
 }
 
 type BackendServerKey struct {
@@ -34,6 +35,7 @@ type BackendServerKey struct {
 	InstanceID           string
 	TerminateFrontendTLS bool
 	ALPNs                string
+	SniRewriteHostname  string // SNI hostname to send to backend
 }
 
 type BackendServerDetails struct {
@@ -56,7 +58,7 @@ func NewRoutingTableEntry(backends []BackendServerInfo) RoutingTableEntry {
 		Backends: make(map[BackendServerKey]BackendServerDetails),
 	}
 	for _, backend := range backends {
-		backendServerKey := BackendServerKey{Address: backend.Address, Port: backend.Port, TLSPort: backend.TLSPort, InstanceID: backend.InstanceID, TerminateFrontendTLS: backend.TerminateFrontendTLS, ALPNs: backend.ALPNs}
+		backendServerKey := BackendServerKey{Address: backend.Address, Port: backend.Port, TLSPort: backend.TLSPort, InstanceID: backend.InstanceID, TerminateFrontendTLS: backend.TerminateFrontendTLS, ALPNs: backend.ALPNs, SniRewriteHostname: backend.SniRewriteHostname}
 		backendServerDetails := BackendServerDetails{ModificationTag: backend.ModificationTag, TTL: backend.TTL, UpdatedTime: time.Now()}
 
 		routingTableEntry.Backends[backendServerKey] = backendServerDetails
@@ -128,7 +130,7 @@ func (table RoutingTable) PruneEntries(defaultTTL int) {
 }
 
 func (table RoutingTable) serverKeyDetailsFromInfo(info BackendServerInfo) (BackendServerKey, BackendServerDetails) {
-	return BackendServerKey{Address: info.Address, Port: info.Port, TLSPort: info.TLSPort, InstanceID: info.InstanceID, TerminateFrontendTLS: info.TerminateFrontendTLS, ALPNs: info.ALPNs}, BackendServerDetails{ModificationTag: info.ModificationTag, TTL: info.TTL, UpdatedTime: time.Now()}
+	return BackendServerKey{Address: info.Address, Port: info.Port, TLSPort: info.TLSPort, InstanceID: info.InstanceID, TerminateFrontendTLS: info.TerminateFrontendTLS, ALPNs: info.ALPNs, SniRewriteHostname: info.SniRewriteHostname}, BackendServerDetails{ModificationTag: info.ModificationTag, TTL: info.TTL, UpdatedTime: time.Now()}
 }
 
 // Set returns true if routing configuration should be modified, false if it should not.
