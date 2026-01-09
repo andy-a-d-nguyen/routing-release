@@ -314,6 +314,7 @@ var _ = Describe("Main", func() {
 						6790,
 						"instance-guid",
 						nil,
+						nil,
 						0,
 						models.ModificationTag{},
 						false,

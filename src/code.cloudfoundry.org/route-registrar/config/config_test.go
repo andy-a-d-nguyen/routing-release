@@ -1357,6 +1357,7 @@ var _ = Describe("Config", func() {
 					Timeout:    5 * time.Second,
 				},
 				ServerCertDomainSAN:  "some.service.internal",
+				SniRewriteSan:        "some.rewrite.internal",
 				TerminateFrontendTLS: true,
 				ALPNs:                []string{"alpn1", "alpn2"},
 				Options: &config.Options{
