@@ -95,11 +95,17 @@ TEXT
       if route['sni_routable_san'] == nil || route['sni_routable_san'] == ''
         raise "route_registrar.routes[#{index}].route.sni_routable_san must be provided when type is sni and terminate_frontend_tls is enabled"
       end
+      if route['sni_rewrite_san'] == nil || route['sni_rewrite_san'] == ''
+        raise "route_registrar.routes[#{index}].route.sni_rewrite_san must be provided when type is sni and terminate_frontend_tls is enabled"
+      end
     end
 
     if route['type'] == 'sni' && !route['terminate_frontend_tls']
       if route['sni_routable_san'] != nil
         raise "route_registrar.routes[#{index}].route.sni_routable_san cannot be provided when type is sni and terminate_frontend_tls is disabled"
+      end
+      if route['sni_rewrite_san'] != nil && route['sni_rewrite_san'] != ''
+        raise "route_registrar.routes[#{index}].route.sni_rewrite_san cannot be provided when type is sni and terminate_frontend_tls is disabled"
       end
 
       route['sni_routable_san'] = spec.address
@@ -112,6 +118,7 @@ TEXT
         end
       end
     end
+
   end
 
   host = nil

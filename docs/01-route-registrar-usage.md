@@ -86,6 +86,9 @@ The route-registrar expects a configuration json file like the one below:
   - `health_check` is optional and explained in more detail below.
   - `sni_routable_san` is the SAN used to route the request to the appropriate
     backend. Required when `type` is `sni` and `terminate_frontend_tls` is enabled.
+  - `sni_rewrite_san` is the SAN used to override the SNI hostname sent to backend
+    servers during TLS handshakes. Required when `type` is `sni` and `terminate_frontend_tls` is enabled.
+    This allows backends to receive a different hostname than what the client provided.
   - `terminate_frontend_tls` is optional. When true, the router will terminate 
     TLS before forwarding the requests to the backend servers. Default: false
   - `enable_backend_tls` is optional. When true, the router will initiate a 
@@ -109,10 +112,20 @@ The route registrar can be used to setup SNI routing. This is an example route j
       "external_port": "TLS_PORT_OF_ROUTE_SOURCE",
       "name": "SOME_ROUTE_NAME",
       "sni_port": "TLS_PORT_OF_ROUTE_DESTINATION",
+      "router_group": "SOME_ROUTER_GROUP",
+      "registration_interval": "20s",
+      "terminate_frontend_tls": true,
+      "sni_routable_san": "routable.example.com",
+      "sni_rewrite_san": "backend.internal.hostname"
     }
   ]
 }
 ```
+
+The `sni_rewrite_san` field is required when `type` is `sni` and `terminate_frontend_tls` is enabled.
+It allows you to specify a different SNI hostname to send to backend servers than the one received
+from the client. This is useful when backends require specific hostnames for certificate validation
+or routing purposes.
 
 ## Health check
 

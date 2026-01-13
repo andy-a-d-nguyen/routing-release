@@ -132,6 +132,8 @@ properties:
         alpns (optional, array): Application Layer Protocol Negotiation strings.
         sni_routable_san(optional, string): is the SAN used to route the request to the appropriate backend. 
           Required when `type` is `sni` and `terminate_frontend_tls` is enabled.
+        sni_rewrite_san(optional, string): is the SAN used to override the SNI hostname sent to backend servers during TLS handshakes.
+          Required when `type` is `sni` and `terminate_frontend_tls` is enabled.
 
       health_check object
         name (required, string): Human-readable reference for the healthcheck

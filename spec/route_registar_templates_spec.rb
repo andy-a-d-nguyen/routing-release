@@ -743,6 +743,76 @@ describe 'route_registrar' do
       end
     end
 
+    describe 'when type is sni and frontend_tls is enabled and sni_routable_san is nil' do
+      before do
+        merged_manifest_properties['route_registrar']['routes'][0] = sni_route
+        merged_manifest_properties['route_registrar']['routes'][0].delete('sni_routable_san')
+        merged_manifest_properties['nats'] = { 'fail_if_using_nats_without_tls' => false }
+      end
+
+      it 'raises an error for invalid sni_routable_san' do
+        expect { template.render(merged_manifest_properties, consumes: links) }.to raise_error(
+         RuntimeError, 'route_registrar.routes[0].route.sni_routable_san must be provided when type is sni and terminate_frontend_tls is enabled'
+       )
+      end
+    end
+
+    describe 'when type is sni and frontend_tls is enabled and sni_rewrite_san is provided' do
+      before do
+        merged_manifest_properties['route_registrar']['routes'][0] = sni_route
+        merged_manifest_properties['route_registrar']['routes'][0]['sni_rewrite_san'] = 'rewrite.example.com'
+        merged_manifest_properties['nats'] = { 'fail_if_using_nats_without_tls' => false }
+      end
+
+      it 'should use the provided sni_rewrite_san' do
+        rendered_hash = JSON.parse(template.render(merged_manifest_properties, consumes: links))
+        expect(rendered_hash['routes'][0]['sni_rewrite_san']).to eq('rewrite.example.com')
+      end
+    end
+
+    describe 'when type is sni and frontend_tls is disabled and sni_rewrite_san is provided' do
+      before do
+        merged_manifest_properties['route_registrar']['routes'][0] = sni_route
+        merged_manifest_properties['route_registrar']['routes'][0]['terminate_frontend_tls'] = false
+        merged_manifest_properties['route_registrar']['routes'][0]['sni_rewrite_san'] = 'rewrite.example.com'
+        merged_manifest_properties['nats'] = { 'fail_if_using_nats_without_tls' => false }
+      end
+
+      it 'raises an error for invalid sni_rewrite_san' do
+        expect { template.render(merged_manifest_properties, consumes: links) }.to raise_error(
+          RuntimeError, 'route_registrar.routes[0].route.sni_rewrite_san cannot be provided when type is sni and terminate_frontend_tls is disabled'
+        )
+      end
+    end
+
+    describe 'when type is sni and frontend_tls is enabled and sni_rewrite_san is NOT provided (empty string)' do
+      before do
+        merged_manifest_properties['route_registrar']['routes'][0] = sni_route
+        merged_manifest_properties['route_registrar']['routes'][0]['sni_rewrite_san'] = ''
+        merged_manifest_properties['nats'] = { 'fail_if_using_nats_without_tls' => false }
+      end
+
+      it 'raises an error for invalid sni_rewrite_san' do
+        expect { template.render(merged_manifest_properties, consumes: links) }.to raise_error(
+          RuntimeError, 'route_registrar.routes[0].route.sni_rewrite_san must be provided when type is sni and terminate_frontend_tls is enabled'
+        )
+      end
+    end
+
+    describe 'when type is sni and frontend_tls is enabled and sni_rewrite_san is nil' do
+      before do
+        merged_manifest_properties['route_registrar']['routes'][0] = sni_route
+        merged_manifest_properties['route_registrar']['routes'][0].delete('sni_rewrite_san')
+        merged_manifest_properties['nats'] = { 'fail_if_using_nats_without_tls' => false }
+      end
+
+      it 'raises an error for invalid sni_rewrite_san' do
+        expect { template.render(merged_manifest_properties, consumes: links) }.to raise_error(
+          RuntimeError, 'route_registrar.routes[0].route.sni_rewrite_san must be provided when type is sni and terminate_frontend_tls is enabled'
+        )
+      end
+    end
+
     describe 'when tls is not enabled and the san is not provided' do
       before do
         merged_manifest_properties['route_registrar']['routes'][0].delete('tls_port')
