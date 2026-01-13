@@ -25,7 +25,7 @@ type BackendServerInfo struct {
 	TTL                  int
 	TerminateFrontendTLS bool
 	ALPNs                string
-	SniRewriteHostname  string // SNI hostname to send to backend
+	SniRewriteHostname   string
 }
 
 type BackendServerKey struct {
@@ -35,7 +35,7 @@ type BackendServerKey struct {
 	InstanceID           string
 	TerminateFrontendTLS bool
 	ALPNs                string
-	SniRewriteHostname  string // SNI hostname to send to backend
+	SniRewriteHostname   string
 }
 
 type BackendServerDetails struct {

@@ -287,16 +287,17 @@ backend backend_80
 `))
 					})
 
-					It("configures the backend server with sni str directive and client cert", func() {
-						backendTlsCfg.ClientCertAndKeyPath = "/fake/path/to/client_cert_and_key.pem"
-						haproxyConf = models.HAProxyConfig{
-							80: {
-								"": {
-									{Address: "host-88.internal", Port: 8888, TLSPort: 8443, InstanceID: "host-88-instance-id", SniRewriteHostname: "rewrite.example.com"},
+					Context("When a client cert is provided", func() {
+						It("configures the backend server with sni str directive and client cert", func() {
+							backendTlsCfg.ClientCertAndKeyPath = "/fake/path/to/client_cert_and_key.pem"
+							haproxyConf = models.HAProxyConfig{
+								80: {
+									"": {
+										{Address: "host-88.internal", Port: 8888, TLSPort: 8443, InstanceID: "host-88-instance-id", SniRewriteHostname: "rewrite.example.com"},
+									},
 								},
-							},
-						}
-						Expect(marshaller.Marshal(haproxyConf, backendTlsCfg, frontendTlsCfg)).To(Equal(`
+							}
+							Expect(marshaller.Marshal(haproxyConf, backendTlsCfg, frontendTlsCfg)).To(Equal(`
 frontend frontend_80
   mode tcp
   bind :80
@@ -306,6 +307,7 @@ backend backend_80
   mode tcp
   server server_host-88.internal_8443 host-88.internal:8443 ssl verify required ca-file /fake/path/to/ca.pem crt /fake/path/to/client_cert_and_key.pem verifyhost host-88-instance-id sni str(rewrite.example.com)
 `))
+						})
 					})
 				})
 			})

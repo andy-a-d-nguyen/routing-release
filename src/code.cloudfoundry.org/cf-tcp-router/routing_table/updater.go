@@ -258,7 +258,7 @@ func (u *updater) toRoutingTableEntry(logger lager.Logger, routeMapping apimodel
 		TTL:                  ttl,
 		TerminateFrontendTLS: routeMapping.TerminateFrontendTLS,
 		ALPNs:                routeMapping.ALPNs,
-		SniRewriteHostname:   sniRewriteHostname, // Extract internal SNI hostname from route mapping
+		SniRewriteHostname:   sniRewriteHostname,
 	}
 	return routingKey, backendServerInfo
 }
