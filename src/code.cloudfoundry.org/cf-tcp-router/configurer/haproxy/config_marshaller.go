@@ -116,7 +116,7 @@ func (cm configMarshaller) marshalHAProxyBackend(backendName string, backend mod
 				output.WriteString(fmt.Sprintf(" verifyhost %s", server.InstanceID))
 			}
 
-			if server.SniRewriteHostname != "" {
+			if enableFrontendTLS && server.SniRewriteHostname != "" {
 				output.WriteString(fmt.Sprintf(" sni str(%s)", server.SniRewriteHostname))
 			}
 		} else {
