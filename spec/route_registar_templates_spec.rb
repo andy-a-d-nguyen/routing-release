@@ -49,6 +49,7 @@ describe 'route_registrar' do
     "type" => "sni",
     "sni_port" => 5671,
     "sni_routable_san" => "svc-1.foobar.com",
+    "sni_rewrite_san" => "svc-1.foobar.com",
     "terminate_frontend_tls" => true,
     "enable_backend_tls" => true
   } }
@@ -709,6 +710,7 @@ describe 'route_registrar' do
                                                    "type" => "sni",
                                                    "sni_port" => 5671,
                                                    "sni_routable_san" => "svc-1.foobar.com",
+                                                   "sni_rewrite_san" => "svc-1.foobar.com",
                                                    "terminate_frontend_tls" => true,
                                                    "enable_backend_tls" => true
                                                  })
@@ -719,6 +721,7 @@ describe 'route_registrar' do
       before do
         merged_manifest_properties['route_registrar']['routes'][0] = sni_route
         merged_manifest_properties['route_registrar']['routes'][0]['terminate_frontend_tls'] = false
+        merged_manifest_properties['route_registrar']['routes'][0].delete('sni_rewrite_san')
         merged_manifest_properties['nats'] = { 'fail_if_using_nats_without_tls' => false }
       end
 
@@ -774,6 +777,7 @@ describe 'route_registrar' do
       before do
         merged_manifest_properties['route_registrar']['routes'][0] = sni_route
         merged_manifest_properties['route_registrar']['routes'][0]['terminate_frontend_tls'] = false
+        merged_manifest_properties['route_registrar']['routes'][0].delete('sni_routable_san')
         merged_manifest_properties['route_registrar']['routes'][0]['sni_rewrite_san'] = 'rewrite.example.com'
         merged_manifest_properties['nats'] = { 'fail_if_using_nats_without_tls' => false }
       end
