@@ -64,9 +64,9 @@ var _ = Describe("Routing API", func() {
 
 	It("Sets SNI rewrite hostname if SniRewriteSan is present.", func() {
 		tcpRouteMapping, err := api.makeTcpRouteMapping(config.Route{
-			Port:         &port,
-			ExternalPort: &externalPort,
-			RouterGroup:  "my-router-group",
+			Port:          &port,
+			ExternalPort:  &externalPort,
+			RouterGroup:   "my-router-group",
 			SniRewriteSan: "sniRewriteHostname",
 		})
 		Expect(err).NotTo(HaveOccurred())

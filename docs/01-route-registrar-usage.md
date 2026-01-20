@@ -87,7 +87,7 @@ The route-registrar expects a configuration json file like the one below:
   - `sni_routable_san` is the SAN used to route the request to the appropriate
     backend. Required when `type` is `sni` and `terminate_frontend_tls` is enabled.
   - `sni_rewrite_san` is the SAN used to override the SNI hostname sent to backend
-    servers during TLS handshakes. Required when `type` is `sni` and `terminate_frontend_tls` is enabled.
+    servers during TLS handshakes. Optional, but when provided, requires `type` to be `sni` and `terminate_frontend_tls` to be enabled.
     This allows backends to receive a different hostname than what the client provided.
   - `terminate_frontend_tls` is optional. When true, the router will terminate 
     TLS before forwarding the requests to the backend servers. Default: false
@@ -122,7 +122,7 @@ The route registrar can be used to setup SNI routing. This is an example route j
 }
 ```
 
-The `sni_rewrite_san` field is required when `type` is `sni` and `terminate_frontend_tls` is enabled.
+The `sni_rewrite_san` field is optional. When provided, it requires `type` to be `sni` and `terminate_frontend_tls` to be enabled.
 It allows you to specify a different SNI hostname to send to backend servers than the one received
 from the client. This is useful when backends require specific hostnames for certificate validation
 or routing purposes.

@@ -151,7 +151,7 @@ type Route struct {
 	Host                 string
 	ExternalPort         *uint16
 	RouteServiceUrl      string
-	RegistrationInterval   time.Duration
+	RegistrationInterval time.Duration
 	HealthCheck          *HealthCheck
 	ServerCertDomainSAN  string
 	SniRewriteSan        string
