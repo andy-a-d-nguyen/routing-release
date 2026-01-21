@@ -5,15 +5,15 @@ go 1.24.9
 replace github.com/cactus/go-statsd-client => github.com/cactus/go-statsd-client v2.0.2-0.20150911070441-6fa055a7b594+incompatible
 
 require (
-	code.cloudfoundry.org/cfhttp/v2 v2.66.0
-	code.cloudfoundry.org/clock v1.58.0
-	code.cloudfoundry.org/debugserver v0.81.0
-	code.cloudfoundry.org/diego-logging-client v0.87.0
-	code.cloudfoundry.org/eventhub v0.61.0
+	code.cloudfoundry.org/cfhttp/v2 v2.67.0
+	code.cloudfoundry.org/clock v1.59.0
+	code.cloudfoundry.org/debugserver v0.82.0
+	code.cloudfoundry.org/diego-logging-client v0.88.0
+	code.cloudfoundry.org/eventhub v0.62.0
 	code.cloudfoundry.org/go-loggregator/v9 v9.2.1
-	code.cloudfoundry.org/go-metric-registry v0.0.0-20260113113534-1f0399660faf
-	code.cloudfoundry.org/lager/v3 v3.58.0
-	code.cloudfoundry.org/localip v0.60.0
+	code.cloudfoundry.org/go-metric-registry v0.0.0-20260121160742-6919d065dcf4
+	code.cloudfoundry.org/lager/v3 v3.59.0
+	code.cloudfoundry.org/localip v0.61.0
 	code.cloudfoundry.org/locket v0.0.0-20251117222557-be612341b29d
 	code.cloudfoundry.org/tlsconfig v0.43.0
 	github.com/armon/go-proxyproto v0.1.0
@@ -54,8 +54,8 @@ require (
 
 require (
 	code.cloudfoundry.org/bbs v0.0.0-20260107153229-7b22834eb1d7 // indirect
-	code.cloudfoundry.org/durationjson v0.61.0 // indirect
-	code.cloudfoundry.org/go-diodes v0.0.0-20260112063157-4b000d565325 // indirect
+	code.cloudfoundry.org/durationjson v0.62.0 // indirect
+	code.cloudfoundry.org/go-diodes v0.0.0-20260119094648-9c5f37160881 // indirect
 	code.cloudfoundry.org/inigo v0.0.0-20210615140442-4bdc4f6e44d5 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/Masterminds/semver/v3 v3.4.0 // indirect
@@ -104,6 +104,6 @@ require (
 	golang.org/x/sys v0.40.0 // indirect
 	golang.org/x/text v0.33.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260114163908-3f89685c29c3 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260120221211-b8f7ae30c516 // indirect
 	gopkg.in/alexcesaro/statsd.v2 v2.0.0 // indirect
 )
