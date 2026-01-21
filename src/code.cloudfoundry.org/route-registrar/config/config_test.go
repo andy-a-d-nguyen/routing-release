@@ -27,12 +27,14 @@ var _ = Describe("Config", func() {
 		routeName1 string
 		routeName2 string
 
-		port0           uint16
-		port1           uint16
-		tcpPort0        uint16
-		backendPort     uint16
-		sniExternalPort uint16
-		sniPort         uint16
+		port0            uint16
+		port1            uint16
+		tcpPort0         uint16
+		backendPort      uint16
+		sniExternalPort  uint16
+		sniPort          uint16
+		sniExternalPort2 uint16
+		sniPort2         uint16
 
 		protocolH1 string
 		protocolH2 string
@@ -55,6 +57,8 @@ var _ = Describe("Config", func() {
 		backendPort = 15000
 		sniExternalPort = 16000
 		sniPort = 17000
+		sniExternalPort2 = 17000
+		sniPort2 = 18000
 		protocolH1 = "http1"
 		protocolH2 = "http2"
 
@@ -126,6 +130,17 @@ var _ = Describe("Config", func() {
 					SniRoutableSan:       "sni.internal",
 					RouterGroup:          "some-router-group",
 					RegistrationInterval: registrationInterval1String,
+					TerminateFrontendTLS: true,
+				},
+				{
+					Type:                 "sni",
+					ExternalPort:         &sniExternalPort2,
+					SniPort:              &sniPort2,
+					SniRoutableSan:       "sni.example.com",
+					SniRewriteSan:        "backend.internal.hostname",
+					RouterGroup:          "some-router-group",
+					RegistrationInterval: registrationInterval1String,
+					TerminateFrontendTLS: true,
 				},
 			},
 			DynamicConfigGlobs: []string{"/some/config/*/path1", "/some/config/*/path2"},
@@ -1131,7 +1146,7 @@ var _ = Describe("Config", func() {
 				c, err := configSchema.ParseSchemaAndSetDefaultsToConfig()
 				Expect(c).To(BeNil())
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(HavePrefix("there were 8 errors with 'config'"))
+				Expect(err.Error()).To(HavePrefix("there were 9 errors with 'config'"))
 			})
 
 			It("aggregates the errors", func() {
@@ -1357,6 +1372,7 @@ var _ = Describe("Config", func() {
 					Timeout:    5 * time.Second,
 				},
 				ServerCertDomainSAN:  "some.service.internal",
+				SniRewriteSan:        "some.rewrite.internal",
 				TerminateFrontendTLS: true,
 				ALPNs:                []string{"alpn1", "alpn2"},
 				Options: &config.Options{

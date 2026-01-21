@@ -115,6 +115,10 @@ func (cm configMarshaller) marshalHAProxyBackend(backendName string, backend mod
 			if server.InstanceID != "" {
 				output.WriteString(fmt.Sprintf(" verifyhost %s", server.InstanceID))
 			}
+
+			if enableFrontendTLS && server.SniRewriteHostname != "" {
+				output.WriteString(fmt.Sprintf(" sni str(%s)", server.SniRewriteHostname))
+			}
 		} else {
 			if server.TLSPort == 0 && backendTlsCfg.Enabled {
 				cm.logger.Error("route-missing-tls-information", fmt.Errorf("Backend TLSPort was set to 0. If TLS is intentionally off for this backend, set this to -1 to suppress this message"), lager.Data{"backend": server})

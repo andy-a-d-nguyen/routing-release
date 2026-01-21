@@ -51,7 +51,18 @@
       "external_port": 16000,
       "sni_routable_san": "sni.internal",
       "router_group": "some-router-group",
-      "registration_interval": "10s"
+      "registration_interval": "10s",
+      "terminate_frontend_tls": true
+    },
+    {
+      "type": "sni",
+      "sni_port": 18000,
+      "external_port": 17000,
+      "sni_routable_san": "sni.example.com",
+      "sni_rewrite_san": "backend.internal.hostname",
+      "router_group": "some-router-group",
+      "registration_interval": "10s",
+      "terminate_frontend_tls": true
     }
   ],
   "message_bus_servers": [

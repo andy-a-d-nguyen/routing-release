@@ -62,6 +62,28 @@ var _ = Describe("Routing API", func() {
 		Expect(tcpRouteMapping.SniHostname).To(BeNil())
 	})
 
+	It("Sets SNI rewrite hostname if SniRewriteSan is present.", func() {
+		tcpRouteMapping, err := api.makeTcpRouteMapping(config.Route{
+			Port:          &port,
+			ExternalPort:  &externalPort,
+			RouterGroup:   "my-router-group",
+			SniRewriteSan: "sniRewriteHostname",
+		})
+		Expect(err).NotTo(HaveOccurred())
+		Expect(tcpRouteMapping.SniRewriteHostname).ToNot(BeNil())
+		Expect(*tcpRouteMapping.SniRewriteHostname).To(Equal("sniRewriteHostname"))
+	})
+
+	It("SNI rewrite hostname nil if SniRewriteSan is not present.", func() {
+		tcpRouteMapping, err := api.makeTcpRouteMapping(config.Route{
+			Port:         &port,
+			ExternalPort: &externalPort,
+			RouterGroup:  "my-router-group",
+		})
+		Expect(err).NotTo(HaveOccurred())
+		Expect(tcpRouteMapping.SniRewriteHostname).To(BeNil())
+	})
+
 	It("Sets TerminateFrontendTLS if TerminateFrontendTLS is present.", func() {
 		tcpRouteMapping, err := api.makeTcpRouteMapping(config.Route{
 			Port:                 &port,

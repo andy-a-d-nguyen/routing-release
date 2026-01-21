@@ -96,6 +96,7 @@ func (r *RoutingAPI) makeTcpRouteMapping(route config.Route) (models.TcpRouteMap
 		hostTlsPort,
 		"",
 		nilIfEmpty(&route.ServerCertDomainSAN),
+		nilIfEmpty(&route.SniRewriteSan),
 		calculateTTL(route.RegistrationInterval, r.routingAPIMaxTTL),
 		models.ModificationTag{},
 		route.TerminateFrontendTLS,
