@@ -7,15 +7,15 @@ replace github.com/cactus/go-statsd-client => github.com/cactus/go-statsd-client
 require (
 	code.cloudfoundry.org/cfhttp/v2 v2.67.0
 	code.cloudfoundry.org/clock v1.59.0
-	code.cloudfoundry.org/debugserver v0.82.0
-	code.cloudfoundry.org/diego-logging-client v0.88.0
+	code.cloudfoundry.org/debugserver v0.83.0
+	code.cloudfoundry.org/diego-logging-client v0.89.0
 	code.cloudfoundry.org/eventhub v0.62.0
 	code.cloudfoundry.org/go-loggregator/v9 v9.2.1
 	code.cloudfoundry.org/go-metric-registry v0.0.0-20260121160742-6919d065dcf4
 	code.cloudfoundry.org/lager/v3 v3.59.0
 	code.cloudfoundry.org/localip v0.61.0
 	code.cloudfoundry.org/locket v0.0.0-20251117222557-be612341b29d
-	code.cloudfoundry.org/tlsconfig v0.43.0
+	code.cloudfoundry.org/tlsconfig v0.44.0
 	github.com/armon/go-proxyproto v0.1.0
 	github.com/cactus/go-statsd-client v3.2.1+incompatible
 	github.com/cloudfoundry-community/go-uaa v0.3.6
@@ -27,12 +27,12 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/jinzhu/gorm v1.9.16
 	github.com/kisielk/errcheck v1.9.0
-	github.com/lib/pq v1.10.9
-	github.com/nats-io/nats-server/v2 v2.12.3
+	github.com/lib/pq v1.11.1
+	github.com/nats-io/nats-server/v2 v2.12.4
 	github.com/nats-io/nats.go v1.48.0
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
-	github.com/onsi/ginkgo/v2 v2.27.5
-	github.com/onsi/gomega v1.39.0
+	github.com/onsi/ginkgo/v2 v2.28.1
+	github.com/onsi/gomega v1.39.1
 	github.com/openzipkin/zipkin-go v0.4.3
 	github.com/rcrowley/go-metrics v0.0.0-20250401214520-65e299d6c5c9
 	github.com/tedsuo/ifrit v0.0.0-20230516164442-7862c310ad26
@@ -84,7 +84,7 @@ require (
 	github.com/minio/highwayhash v1.0.4-0.20251030100505-070ab1a87a76 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/nats-io/jwt/v2 v2.8.0 // indirect
-	github.com/nats-io/nkeys v0.4.14 // indirect
+	github.com/nats-io/nkeys v0.4.15 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_golang v1.23.2 // indirect
@@ -104,6 +104,6 @@ require (
 	golang.org/x/sys v0.40.0 // indirect
 	golang.org/x/text v0.33.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260122232226-8e98ce8d340d // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260128011058-8636f8732409 // indirect
 	gopkg.in/alexcesaro/statsd.v2 v2.0.0 // indirect
 )

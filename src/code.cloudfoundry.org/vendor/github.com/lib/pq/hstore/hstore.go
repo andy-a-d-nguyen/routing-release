@@ -11,9 +11,8 @@ type Hstore struct {
 	Map map[string]sql.NullString
 }
 
-// escapes and quotes hstore keys/values
-// s should be a sql.NullString or string
-func hQuote(s interface{}) string {
+// Escapes and quotes hstore keys/values. s should be a sql.NullString or string
+func hQuote(s any) string {
 	var str string
 	switch v := s.(type) {
 	case sql.NullString:
@@ -35,7 +34,7 @@ func hQuote(s interface{}) string {
 //
 // Note h.Map is reallocated before the scan to clear existing values. If the
 // hstore column's database value is NULL, then h.Map is set to nil instead.
-func (h *Hstore) Scan(value interface{}) error {
+func (h *Hstore) Scan(value any) error {
 	if value == nil {
 		h.Map = nil
 		return nil
