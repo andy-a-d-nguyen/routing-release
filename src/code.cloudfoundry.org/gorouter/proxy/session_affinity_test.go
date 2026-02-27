@@ -166,7 +166,7 @@ var _ = Describe("Session Affinity with JSESSIONID", func() {
 
 		Context("when the response contains a JSESSIONID cookie", func() {
 
-			Context("and JSESSIONID is a session cookie", func() {
+			Context("and JSESSIONID cookie is a session cookie", func() {
 				var expiry time.Time
 
 				BeforeEach(func() {
@@ -225,13 +225,13 @@ var _ = Describe("Session Affinity with JSESSIONID", func() {
 				})
 			})
 
-			Context("and JSESSIONID has MaxAge < 0 to invalidate the cookie", func() {
+			Context("and JSESSIONID cookie has MaxAge < 0", func() {
 
 				BeforeEach(func() {
 					jSessionIdCookie.MaxAge = -1
 				})
 
-				It("responds with a VCAP_ID cookie scoped to the session", func() {
+				It("responds with a VCAP_ID cookie with MaxAge set to invalidate", func() {
 					ln := test_util.RegisterConnHandler(r, "app", responseWithJSessionID, test_util.RegisterConfig{InstanceId: "my-id"})
 					defer ln.Close()
 
@@ -254,7 +254,7 @@ var _ = Describe("Session Affinity with JSESSIONID", func() {
 				})
 			})
 
-			Context("and JSESSIONID has positive MaxAge", func() {
+			Context("and JSESSIONID cookie has MaxAge > 0", func() {
 
 				BeforeEach(func() {
 					jSessionIdCookie.MaxAge = 1
@@ -289,7 +289,7 @@ var _ = Describe("Session Affinity with JSESSIONID", func() {
 					jSessionIdCookie.Secure = true
 				})
 
-				It("responds with a VCAP_ID cookie that is also Secure ", func() {
+				It("responds with a VCAP_ID cookie that is also Secure", func() {
 					ln := test_util.RegisterConnHandler(r, "app", responseWithJSessionID, test_util.RegisterConfig{InstanceId: "my-id"})
 					defer ln.Close()
 
@@ -310,13 +310,13 @@ var _ = Describe("Session Affinity with JSESSIONID", func() {
 				})
 			})
 
-			Context("with secure cookies enabled and non-secure cookie", func() {
+			Context("and secure cookies are enabled with non-secure JSESSIONID cookie", func() {
 				BeforeEach(func() {
 					conf.SecureCookies = true
 					jSessionIdCookie.Secure = false
 				})
 
-				It("marks the cookie as secure only", func() {
+				It("responds with a VCAP_ID cookie that is marked as secure", func() {
 					ln := test_util.RegisterConnHandler(r, "app", responseWithJSessionID, test_util.RegisterConfig{InstanceId: "my-id"})
 					defer ln.Close()
 
