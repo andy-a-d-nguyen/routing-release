@@ -45,7 +45,7 @@ var _ = Describe("Session Affinity with JSESSIONID", func() {
 		jSessionIdCookie = &http.Cookie{
 			Name:   StickyCookieKey,
 			Value:  "xxx",
-			MaxAge: 1,
+			MaxAge: 0,
 		}
 	})
 
