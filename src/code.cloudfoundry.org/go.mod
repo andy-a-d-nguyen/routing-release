@@ -17,7 +17,7 @@ require (
 	code.cloudfoundry.org/locket v0.0.0-20251117222557-be612341b29d
 	code.cloudfoundry.org/tlsconfig v0.51.0
 	github.com/armon/go-proxyproto v0.1.0
-	github.com/cactus/go-statsd-client v3.2.1+incompatible
+	github.com/cactus/go-statsd-client v0.0.0-00010101000000-000000000000
 	github.com/cloudfoundry-community/go-uaa v0.3.6
 	github.com/cloudfoundry/cf-test-helpers/v2 v2.13.0
 	github.com/cloudfoundry/custom-cats-reporters v0.0.2
