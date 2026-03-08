@@ -5,15 +5,15 @@ go 1.25.0
 replace github.com/cactus/go-statsd-client => github.com/cactus/go-statsd-client v2.0.2-0.20150911070441-6fa055a7b594+incompatible
 
 require (
-	code.cloudfoundry.org/cfhttp/v2 v2.69.0
-	code.cloudfoundry.org/clock v1.61.0
-	code.cloudfoundry.org/debugserver v0.86.0
-	code.cloudfoundry.org/diego-logging-client v0.93.0
-	code.cloudfoundry.org/eventhub v0.64.0
+	code.cloudfoundry.org/cfhttp/v2 v2.70.0
+	code.cloudfoundry.org/clock v1.62.0
+	code.cloudfoundry.org/debugserver v0.87.0
+	code.cloudfoundry.org/diego-logging-client v0.94.0
+	code.cloudfoundry.org/eventhub v0.65.0
 	code.cloudfoundry.org/go-loggregator/v9 v9.2.1
-	code.cloudfoundry.org/go-metric-registry v0.0.0-20260217151434-5acadfff053b
-	code.cloudfoundry.org/lager/v3 v3.61.0
-	code.cloudfoundry.org/localip v0.63.0
+	code.cloudfoundry.org/go-metric-registry v0.0.0-20260303102542-76ee3e2b6585
+	code.cloudfoundry.org/lager/v3 v3.62.0
+	code.cloudfoundry.org/localip v0.64.0
 	code.cloudfoundry.org/locket v0.0.0-20251117222557-be612341b29d
 	code.cloudfoundry.org/tlsconfig v0.46.0
 	github.com/armon/go-proxyproto v0.1.0
@@ -47,14 +47,14 @@ require (
 	golang.org/x/net v0.51.0
 	golang.org/x/oauth2 v0.35.0
 	golang.org/x/tools v0.42.0
-	google.golang.org/grpc v1.79.1
+	google.golang.org/grpc v1.79.2
 	google.golang.org/protobuf v1.36.11
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
 	code.cloudfoundry.org/bbs v0.0.0-20260218135931-a998cae3b567 // indirect
-	code.cloudfoundry.org/durationjson v0.64.0 // indirect
+	code.cloudfoundry.org/durationjson v0.65.0 // indirect
 	code.cloudfoundry.org/go-diodes v0.0.0-20260209061029-a81ffbc46978 // indirect
 	code.cloudfoundry.org/inigo v0.0.0-20210615140442-4bdc4f6e44d5 // indirect
 	filippo.io/edwards25519 v1.2.0 // indirect
@@ -73,7 +73,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/go-tpm v0.9.8 // indirect
-	github.com/google/pprof v0.0.0-20260202012954-cb029daf43ef // indirect
+	github.com/google/pprof v0.0.0-20260302011040-a15ffb7f9dcc // indirect
 	github.com/honeycombio/libhoney-go v1.26.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
@@ -97,7 +97,7 @@ require (
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	go.uber.org/automaxprocs v1.6.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	go.yaml.in/yaml/v2 v2.4.3 // indirect
+	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/mod v0.33.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
