@@ -1,10 +1,10 @@
 ---
-title: Observability
+title: Gorouter Observability
 expires_at: never
 tags: [ routing-release,gorouter ]
 ---
 
-# Observability
+# Gorouter Observability
 
 ## Instrumentation
 
@@ -55,7 +55,7 @@ against changes, rely on the `/var/vcap/jobs/gorouter/bin/retrieve-local-routes`
 to get this information.
 
 Because of the nature of the data present in `/varz` and `/routes`, they require
-http basic authentication credentials. These credentials can be found the BOSH
+HTTP basic authentication credentials. These credentials can be found in the BOSH
 manifest for cf-deployment under the `router` job:
 
 ```bash
@@ -242,7 +242,7 @@ $ curl "http://someuser:somepass@10.0.32.15:8080/varz"
 
 The `<HOST>:<PROMETHEUS_PORT>/metrics` endpoint provides prometheus metrics.
 
-Prometheus port, as well as certificates and other parameters, are configured in gorouter configuration.
+Prometheus port, as well as certificates and other parameters, are configured in the Gorouter configuration.
 
 <details>
   <summary>Metrics response (click to expand)</summary>
@@ -346,7 +346,7 @@ go tool pprof http://localhost:8080/debug/pprof/profile
 The router's logging is specified in its YAML configuration file. It supports
 the following log levels:
 
-* `fatal` - A fatal error has occurred that makes gorouter unable to handle any
+* `fatal` - A fatal error has occurred that makes Gorouter unable to handle any
   requests. Examples: the router can't bind to its TCP port, a CF component has
   published invalid data to the router.
 * `error` - An unexpected error has occurred. Examples: the router failed to
@@ -356,7 +356,7 @@ the following log levels:
 * `debug` - A lower-level event has occurred. Examples: route registration,
   route unregistration.
 
-Sample log message in gorouter.
+Sample log message in Gorouter.
 
 `[2017-02-01 22:54:08+0000] {"log_level":0,"timestamp":"2019-11-21T22:16:18.750673404Z","message":"endpoint-registered","source":"vcap.gorouter.registry","data":{"uri":"0-*.login.bosh-lite.com","backend":"10.123.0.134:8080","modification_tag":{"guid":"","index":0}}}`
 
@@ -425,9 +425,8 @@ backend_time:<Backend Time> x_cf_routererror:<X-Cf-RouterError>
 <Extra Headers>`
 
 * Status Code, Response Time, Gorouter Time, Application ID, Application Index,
-  X-Cf-RouterError, and Extra Headers are all optional fields. The absence of
-  Status Code, Response Time, Application ID, Application Index, or
-  X-Cf-RouterError will result in a "-" in the corresponding field.
+  X-Cf-RouterError, and Extra Headers are all optional fields. Missing values
+  appear as `-` in the corresponding field.
 
 * `Response Time` is the total time it takes for the request to go through the
   Gorouter to the app and for the response to travel back through the Gorouter.

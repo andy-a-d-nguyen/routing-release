@@ -1,5 +1,5 @@
 ---
-title: Usage
+title: Route-Registrar Usage
 expires_at: never
 tags: [routing-release,route-registrar]
 ---
@@ -14,11 +14,11 @@ tags: [routing-release,route-registrar]
 
 <!-- vim-markdown-toc -->
 
-# Usage
+# Route-Registrar Usage
 
 ## Configuration
 
-The route-registrar expects a configuration json file like the one below:
+Route-registrar expects a configuration JSON file like the one below:
 ```json
 {
   "message_bus_servers": [
@@ -87,23 +87,25 @@ The route-registrar expects a configuration json file like the one below:
   - `sni_routable_san` is the SAN used to route the request to the appropriate
     backend. Required when `type` is `sni` and `terminate_frontend_tls` is enabled.
   - `sni_rewrite_san` is the SAN used to override the SNI hostname sent to backend
-    servers during TLS handshakes. Optional, but when provided, requires `type` to be `sni` and `terminate_frontend_tls` to be enabled.
-    This allows backends to receive a different hostname than what the client provided.
-  - `terminate_frontend_tls` is optional. When true, the router will terminate 
-    TLS before forwarding the requests to the backend servers. Default: false
-  - `enable_backend_tls` is optional. When true, the router will initiate a 
-    TLS connection to the backend servers. Default: false 
+    servers during TLS handshakes. Optional, but when provided, requires `type` to be `sni` 
+    and `terminate_frontend_tls` to be enabled. This allows backends to receive a different 
+    hostname than what the client provided.
+  - `terminate_frontend_tls` is optional. When set to `true`, the router terminates TLS
+    before forwarding requests to backend servers. Default: `false`
+  - `enable_backend_tls` is optional. When set to `true`, the router initiates a 
+    TLS connection to backend servers. Default: `false`
   - `alpns` is optional and is an array of Application Layer Protocol Negotiation strings.
   - `options` is optional and explained in more detail below.
 
-Run route-registrar binaries using the following command
+Run the route-registrar binary using the following command:
 
 ```bash
 route-registrar -configPath FILE_PATH_TO_CONFIG_JSON -pidfile PATH_TO_PIDFILE
 ```
 
 ## SNI Routing
-The route registrar can be used to setup SNI routing. This is an example route json:
+
+Route-registrar can be used to configure SNI routing. This is an example route JSON:
 ```
 {
   "routes": [
@@ -122,17 +124,18 @@ The route registrar can be used to setup SNI routing. This is an example route j
 }
 ```
 
-The `sni_rewrite_san` field is optional. When provided, it requires `type` to be `sni` and `terminate_frontend_tls` to be enabled.
-It allows you to specify a different SNI hostname to send to backend servers than the one received
-from the client. This is useful when backends require specific hostnames for certificate validation
-or routing purposes.
+The `sni_rewrite_san` field is optional. When provided, it requires `type` to be `sni` and 
+`terminate_frontend_tls` to be enabled. It allows you to specify a different SNI hostname to send 
+to backend servers than the one received from the client. This is useful when backends require 
+specific hostnames for certificate validation or routing purposes.
 
 ## Health check
 
-If the `health_check` is not configured for a route collection, the routes are continually registered according to the `registration_interval`.
+If the `health_check` is not configured for a route collection, the routes are continually 
+registered according to the `registration_interval`.
 
-If the `health_check` is configured, then, at the `registration_interval`, 
-the executable provided at `health_check.script_path` is invoked. 
+If the `health_check` is configured, then, at the `registration_interval`,
+the executable provided at `health_check.script_path` is invoked.
 The following applies:
 - if the executable exits with success, the routes are registered.
 - if the executable exits with error, the routes are deregistered.
@@ -146,5 +149,8 @@ The following applies:
   deregistered.
 
 ## Options
-Custom per-route options can be defined and applied to specific routes exclusively.
-- `loadbalancing` enables the selection of a load balancing algorithm for routing incoming requests to the backend. It is possible to choose between `round-robin` and `least-connection`. In cases where this option is not specified, the algorithm [defined by the platform operator](https://github.com/cloudfoundry/routing-release/blob/develop/jobs/gorouter/spec#L101) is applied.
+
+Custom per-route options can be defined for specific routes.
+- `loadbalancing` selects the load balancing algorithm for routing incoming requests to backends. 
+  Choose between `round-robin` and `least-connection`. 
+  If not specified, the algorithm [defined by the platform operator](https://github.com/cloudfoundry/routing-release/blob/develop/jobs/gorouter/spec#L101) is used.

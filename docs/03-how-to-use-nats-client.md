@@ -8,25 +8,22 @@ tags: [routing-release]
 
 ## What is it?
 
-Gorouter is loosely coupled with user apps via the NATS message bus. They share common subjects like `router.register` and `router.unregister` where apps publish their routes 
-while gorouter subscribes to them.
+Gorouter is loosely coupled with user apps via the NATS message bus. They share common subjects like `router.register` and `router.unregister`; apps publish their routes while Gorouter subscribes to them.
 
-If developers want to debug a certain scenario, usually they have to set up applications and NATS in such a way that it reproduces
-the scenario inside gorouter. This can be cumbersome and tedious, as one has to fully deploy Cloud Foundry, push the apps, scale them up
-and then maybe tweak NATS or the IaaS provider to reproduce a network error or other issues.
+To debug a specific scenario, developers typically need to set up applications and NATS to reproduce it within Gorouter. This is cumbersome, as it requires a full Cloud Foundry deployment, pushing apps, scaling them up, and potentially adjusting NATS or the IaaS provider to simulate network errors or other issues.
 
 To mitigate this problem, `nats_client` was created. It has the following features:
 
-- Subscribe to NATS subjects and stream them to the shell to see what's received by gorouter
+- Subscribe to NATS subjects and stream them to the shell to see what Gorouter receives
 - Publish messages to NATS subjects to inject events such as `router.register` and `router.unregister`
-- Save the current route table of a gorouter to a json file. The file may then be inspected and / or changed
-- Load a previously saved route table into gorouter via NATS
+- Save Gorouter's current route table to a JSON file for inspection or modification
+- Load a previously saved route table into Gorouter via NATS
 
 ## Where is it?
 
-After you have deployed `routing` you will find two files on a `gorouter` VM:
+After you have deployed `routing`, you will find two files on a Gorouter VM:
 - `/var/vcap/packages/routing_utils/bin/nats_client` (the actual NATS client binary)
-- `/var/vcap/jobs/gorouter/bin/nats_client` (a wrapper script calling the binary with the gorouter's config file)
+- `/var/vcap/jobs/gorouter/bin/nats_client` (a wrapper script that calls the binary with Gorouter's config file)
 
 ## How to use it
 Show the usage help by running:
@@ -46,12 +43,12 @@ COMMANDS:
                Example: /var/vcap/jobs/gorouter/bin/nats_client pub router.register '{"host":"172.217.6.68","port":80,"uris":["bar.example.com"]}'
 
   save         <FILE>
-               Save this gorouter's route table to a json file.
-               Example: /var/vcap/jobs/gorouter/bin/nats_client save routes.json'
+               Save this Gorouter's route table to a JSON file.
+               Example: /var/vcap/jobs/gorouter/bin/nats_client save routes.json
 
   load         <FILE>
-               Load routes from a json file into this gorouter.
-               Example: /var/vcap/jobs/gorouter/bin/nats_client load routes.json'
+               Load routes from a JSON file into this Gorouter.
+               Example: /var/vcap/jobs/gorouter/bin/nats_client load routes.json
 ```
 
 ### Streaming NATS Messages
@@ -81,11 +78,11 @@ You can then test the new route and see if the backend can be reached using:
 curl http://localhost:8081/200 -H "Host: httpstat.us"
 200 OK%
 ```
-(the above example assumes you have gorouter running locally without TLS)
+(the above example assumes you have Gorouter running locally without TLS)
 
 
 ### Saving the Route Table to Disk
-The `save` command will allow you to store the current route able as a json file.
+The `save` command stores the current route table as a JSON file.
 ```shell
 /var/vcap/jobs/gorouter/bin/nats_client save routes.json
 
@@ -95,24 +92,24 @@ Done
 You can then view and edit the route table to your needs.
 
 ### Loading a Route Table from Disk
-Once you have prepared a route table json file you can load it using the `load` command
+Once you have prepared a route table JSON file, you can load it using the `load` command
 ```shell
 /var/vcap/jobs/gorouter/bin/nats_client load routes.json
 
 Loading route table from routes.json
 Done
 ```
-The routes will not be loaded directly but the contents of `routes.json` will be transformed into `router.register` messages and published to gorouter via NATS in order.
+The routes will not be loaded directly; instead, the contents of `routes.json` will be transformed into `router.register` messages and published to Gorouter via NATS in order.
 
-**NOTICE:**
-*Be aware that non-TLS routes that don't get refreshed continuously will be pruned again.*
+> [!NOTE]
+> Non-TLS routes that are not continuously refreshed will be pruned.
 
 ## When to use it
-There are many scenarios where you may use `nats_client` to debug gorouter issues:
+There are many scenarios where you may use `nats_client` to debug Gorouter issues:
 - Debug retries of failing endpoints
 - Test different kinds of backend errors (e.g. dial timeout, TLS handshake issues, app misbehaving etc.)
 - Debug load balancing algorithms
 - Set up large deployments with hundreds of apps and thousands of routes, without having to actually deploy all of them
 - Simulate outages where large numbers of backends no longer respond (e.g. AZ outages)
-- Simulate NATS outages where apps have moved elsewhere but gorouter didn't get the proper `router.unregister` message
+- Simulate NATS outages where apps have moved elsewhere but Gorouter did not receive the proper `router.unregister` message
 - etc.

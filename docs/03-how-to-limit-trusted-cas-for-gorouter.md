@@ -6,20 +6,20 @@ tags: [routing-release]
 
 # How to Limit Trusted CAs for Gorouter
 
-This doc is for operators who want to use the new "only trust client CA certs" feature for gorouter to limit the CA certs that gorouter trusts. 
+This doc is for operators who want to use the "only trust client CA certs" feature for Gorouter to limit the CA certs that Gorouter trusts.
 
 ## Version
-This feature is available in [0.210.0](https://github.com/cloudfoundry/routing-release/releases/tag/0.210.0) 
+This feature is available in [0.210.0](https://github.com/cloudfoundry/routing-release/releases/tag/0.210.0)
 
 ## Context
-Operators already had the ability to add custom CAs to the gorouter using `router.ca_certs`, but they didn't have the ability to stop the gorouter from trusting the default CAs that are provided with the stemcell.
+Operators already had the ability to add custom CAs to Gorouter using `router.ca_certs`, but they did not have the ability to prevent Gorouter from trusting the default CAs provided with the stemcell.
 
 ## Feature Description 
 
-We have added two new bosh properites: 
+This feature introduced two BOSH properties:
 
-* `router.client_ca_certs` (`optional; default: ""`) that will allow the operators to specify CA certs for the gorouter to trust for client requests.
-* `router.only_trust_client_ca_certs` (`default: false`), that will allow the operator to decide if gorouter should _only_ trust the above CA certs, or concatenate them with those in `router.ca_certs` and those provided by the stemcell
+* `router.client_ca_certs` (`optional; default: ""`) allows operators to specify CA certs for Gorouter to trust for client requests.
+* `router.only_trust_client_ca_certs` (`default: false`) allows the operator to decide if Gorouter should _only_ trust the above CA certs, or concatenate them with those in `router.ca_certs` and those provided by the stemcell.
   * When `true`, only the certs configured in `router.client_ca_certs` are loaded as trusted client certs
   * When `false`, all the certs in `router.ca_certs`, `router.client_ca_certs`, plus the local system store are trusted client certificates.  **This maintains backward compatibility.**
   
@@ -43,7 +43,7 @@ router:
 
 ```
 # Using cert in ca_certs
-curl --cert apple.crt --key apple.key https://GOROUTER_IP -H "HOST: dora.example.com/
+curl --cert apple.crt --key apple.key https://GOROUTER_IP -H "Host: dora.example.com"
 # OK
 
 # Using cert in client_ca_certs
