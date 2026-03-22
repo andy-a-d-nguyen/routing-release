@@ -5,17 +5,17 @@ go 1.25.0
 replace github.com/cactus/go-statsd-client => github.com/cactus/go-statsd-client v2.0.2-0.20150911070441-6fa055a7b594+incompatible
 
 require (
-	code.cloudfoundry.org/cfhttp/v2 v2.71.0
-	code.cloudfoundry.org/clock v1.63.0
-	code.cloudfoundry.org/debugserver v0.88.0
-	code.cloudfoundry.org/diego-logging-client v0.96.0
-	code.cloudfoundry.org/eventhub v0.66.0
+	code.cloudfoundry.org/cfhttp/v2 v2.72.0
+	code.cloudfoundry.org/clock v1.64.0
+	code.cloudfoundry.org/debugserver v0.89.0
+	code.cloudfoundry.org/diego-logging-client v0.97.0
+	code.cloudfoundry.org/eventhub v0.67.0
 	code.cloudfoundry.org/go-loggregator/v9 v9.2.1
-	code.cloudfoundry.org/go-metric-registry v0.0.0-20260303102542-76ee3e2b6585
-	code.cloudfoundry.org/lager/v3 v3.63.0
-	code.cloudfoundry.org/localip v0.65.0
+	code.cloudfoundry.org/go-metric-registry v0.0.0-20260316221732-b5ae994e6b10
+	code.cloudfoundry.org/lager/v3 v3.64.0
+	code.cloudfoundry.org/localip v0.66.0
 	code.cloudfoundry.org/locket v0.0.0-20251117222557-be612341b29d
-	code.cloudfoundry.org/tlsconfig v0.47.0
+	code.cloudfoundry.org/tlsconfig v0.48.0
 	github.com/armon/go-proxyproto v0.1.0
 	github.com/cactus/go-statsd-client v3.2.1+incompatible
 	github.com/cloudfoundry-community/go-uaa v0.3.6
@@ -27,7 +27,7 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/jinzhu/gorm v1.9.16
 	github.com/kisielk/errcheck v1.10.0
-	github.com/lib/pq v1.11.2
+	github.com/lib/pq v1.12.0
 	github.com/nats-io/nats-server/v2 v2.12.5
 	github.com/nats-io/nats.go v1.49.0
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
@@ -40,26 +40,26 @@ require (
 	github.com/urfave/cli v1.22.17
 	github.com/urfave/negroni/v3 v3.1.1
 	github.com/vito/go-sse v1.1.3
-	go.step.sm/crypto v0.76.2
+	go.step.sm/crypto v0.77.1
 	go.uber.org/zap v1.27.1
 	go.uber.org/zap/exp v0.3.0
 	golang.org/x/crypto v0.49.0
 	golang.org/x/net v0.52.0
 	golang.org/x/oauth2 v0.36.0
 	golang.org/x/tools v0.43.0
-	google.golang.org/grpc v1.79.2
+	google.golang.org/grpc v1.79.3
 	google.golang.org/protobuf v1.36.11
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
-	code.cloudfoundry.org/bbs v0.0.0-20260218135931-a998cae3b567 // indirect
-	code.cloudfoundry.org/durationjson v0.66.0 // indirect
+	code.cloudfoundry.org/bbs v0.0.0-20260319204745-f9b7322ba965 // indirect
+	code.cloudfoundry.org/durationjson v0.67.0 // indirect
 	code.cloudfoundry.org/go-diodes v0.0.0-20260209061029-a81ffbc46978 // indirect
 	code.cloudfoundry.org/inigo v0.0.0-20210615140442-4bdc4f6e44d5 // indirect
 	filippo.io/edwards25519 v1.2.0 // indirect
 	github.com/Masterminds/semver/v3 v3.4.0 // indirect
-	github.com/antithesishq/antithesis-sdk-go v0.6.0 // indirect
+	github.com/antithesishq/antithesis-sdk-go v0.7.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bmizerany/pat v0.0.0-20210406213842-e4b6760bdd6f // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
@@ -77,13 +77,13 @@ require (
 	github.com/honeycombio/libhoney-go v1.26.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
-	github.com/jackc/pgx/v5 v5.8.0 // indirect
+	github.com/jackc/pgx/v5 v5.9.0 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
-	github.com/klauspost/compress v1.18.4 // indirect
-	github.com/minio/highwayhash v1.0.4-0.20251030100505-070ab1a87a76 // indirect
+	github.com/klauspost/compress v1.18.5 // indirect
+	github.com/minio/highwayhash v1.0.4 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
-	github.com/nats-io/jwt/v2 v2.8.0 // indirect
+	github.com/nats-io/jwt/v2 v2.8.1 // indirect
 	github.com/nats-io/nkeys v0.4.15 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -103,6 +103,6 @@ require (
 	golang.org/x/sys v0.42.0 // indirect
 	golang.org/x/text v0.35.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260311181403-84a4fc48630c // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260319201613-d00831a3d3e7 // indirect
 	gopkg.in/alexcesaro/statsd.v2 v2.0.0 // indirect
 )
