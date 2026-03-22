@@ -82,10 +82,13 @@ files:
   - code.cloudfoundry.org/vendor/github.com/lib/pq/*.go # gosub
   - code.cloudfoundry.org/vendor/github.com/lib/pq/hstore/*.go # gosub
   - code.cloudfoundry.org/vendor/github.com/lib/pq/internal/pgpass/*.go # gosub
+  - code.cloudfoundry.org/vendor/github.com/lib/pq/internal/pgservice/*.go # gosub
   - code.cloudfoundry.org/vendor/github.com/lib/pq/internal/pqsql/*.go # gosub
+  - code.cloudfoundry.org/vendor/github.com/lib/pq/internal/pqtime/*.go # gosub
   - code.cloudfoundry.org/vendor/github.com/lib/pq/internal/pqutil/*.go # gosub
   - code.cloudfoundry.org/vendor/github.com/lib/pq/internal/proto/*.go # gosub
   - code.cloudfoundry.org/vendor/github.com/lib/pq/oid/*.go # gosub
+  - code.cloudfoundry.org/vendor/github.com/lib/pq/pqerror/*.go # gosub
   - code.cloudfoundry.org/vendor/github.com/lib/pq/scram/*.go # gosub
   - code.cloudfoundry.org/vendor/github.com/nu7hatch/gouuid/*.go # gosub
   - code.cloudfoundry.org/vendor/github.com/onsi/ginkgo/v2/*.go # gosub
