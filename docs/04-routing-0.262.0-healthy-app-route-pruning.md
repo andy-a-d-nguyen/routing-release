@@ -6,17 +6,17 @@ tags: [routing-release,0.262.0]
 
 # (routing-release-0.262.0) Healthy App Route Pruning
 
-Cloud Foundry environments may experience many 503 errors with `x_cf_routererror:"no_endpoints"` even though all of the apps appear to up and functional without error.
-There is an entry in the route table for the desired route, but there are no healthy endpoints available.
+Cloud Foundry environments may experience many 503 errors with `x_cf_routererror:"no_endpoints"` even though all the apps appear to be up and functional.
+The route exists in the routing table but has no healthy endpoints available.
 
-This is caused by Changes introduced in routing-release 0.262.0 to enable Gorouter to retry more types of idempotent requests to failed backends.
+This is caused by changes introduced in routing-release 0.262.0 to enable Gorouter to retry more types of idempotent requests to failed backends.
 
 ## How to detect if your app has experienced this bug
 
-The following commands can be run on the gorouter log file to check for possible occurrences. What you need to look for is when data.error has a value of "context canceled" followed by a prune-failed-endpoint error.
+The following commands can be run against the Gorouter log file to check for possible occurrences. Look for cases where `data.error` has a value of `"context canceled"` followed by a `prune-failed-endpoint` error.
 
 ```
-# Here is an example from from a gorouter log bundle collected from BOSH.  We find a vcap id of a failed request that meets the criteria using the above command.
+# Here is an example from a Gorouter log bundle collected from BOSH. We find a vcap id of a failed request that meets the criteria using the above command.
 find . -name "gorouter.stdout.log*" | while read line; do grep backend-endpoint-failed $line | jq -r '. | select(.data.error | contains("context canceled")) | .data.vcap_request_id'; done | head -1
 
 27116dd3-f047-4a35-7873-e9ef7e1d3f71

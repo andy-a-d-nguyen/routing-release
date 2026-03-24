@@ -1,30 +1,16 @@
 ---
-title: Development Guide
+title: Gorouter Development Guide
 expires_at: never
 tags: [ routing-release,gorouter ]
 ---
 
-# Development Guide
+# Gorouter Development Guide
 
 ## Reporting issues and requesting features
 
 Please report all issues and feature requests in [cloudfoundry/routing-release](https://github.com/cloudfoundry/routing-release).
 
-### Setup
-
-Gorouter dependencies are managed with
-[routing-release](https://github.com/cloudfoundry/routing-release#). Do not
-clone the gorouter repo directly; instead, follow instructions at
-https://github.com/cloudfoundry/routing-release#get-the-code (summarized below).
-
-```bash
-git clone https://github.com/cloudfoundry/routing-release
-cd routing-release
-./scripts/update
-cd src/code.cloudfoundry.org/gorouter
-```
-
-### Running Tests
+## Running Tests
 
 Tests in this repo cannot be run on their own, only as part of Routing Release.
 
@@ -32,7 +18,7 @@ Follow the instructions for [running tests in
 docker](https://github.com/cloudfoundry/routing-release#in-a-docker-container)
 in the routing release readme.
 
-### Building
+## Building
 
 Building creates an executable in the gorouter/ dir:
 
@@ -40,7 +26,7 @@ Building creates an executable in the gorouter/ dir:
 go build
 ```
 
-### Installing
+## Installing
 
 Installing creates an executable in the $GOPATH/bin dir:
 
@@ -48,7 +34,7 @@ Installing creates an executable in the $GOPATH/bin dir:
 go install
 ```
 
-### Start
+## Start
 
 ```bash
 # Start NATS server in daemon mode
@@ -61,9 +47,9 @@ nats-server &
 gorouter
 ```
 
-### Executables
+## Executables
 
-1. `bin/test.bash`: This file is used to run test in Docker & CI and is not meant to be executed manually. Refer to the
+1. `bin/test.bash`: This file is used to run tests in Docker & CI and is not meant to be executed manually. Refer to the
    [routing-release Contribution guide](https://github.com/cloudfoundry/routing-release/blob/develop/.github/CONTRIBUTING.md#running-tests) for more information.
 
 ## Recommended Reading
@@ -72,7 +58,7 @@ Recommended reading before diving into Gorouter code:
 
 - [Hypertext Transfer Protocol](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Message_format)
 - [How to use interfaces in Go](https://jordanorelli.com/post/32665860244/how-to-use-interfaces-in-go)
-- [Golang Concurrency](https://go.dev/blog/pipelines)
+- [Go Concurrency](https://go.dev/blog/pipelines)
 - [http.Transport.RoundTrip](https://golang.org/pkg/net/http/#Transport.RoundTrip)
 - [http.RoundTripper](https://golang.org/pkg/net/http/#RoundTripper)
 - [http.ResponseWriter](https://golang.org/pkg/net/http/#ResponseWriter)
@@ -80,13 +66,10 @@ Recommended reading before diving into Gorouter code:
 
 - [Gorouter README.md](https://github.com/cloudfoundry/gorouter#gorouter)
 
-## Golang TCP Networking Basics
-Nearly all of the networking logic in Golang is dealt with the same pattern as
-if one were dealing with a raw TCP connection.
+## Go TCP Networking Basics
+Nearly all of the networking logic in Go follows the same pattern as working with a raw TCP connection.
 
-Just as a general overview of how TCP networking works in Golang, let's go
-through a sample set of applications that read and write from/to a TCP
-connection.
+Here is an overview of how TCP networking works in Go, using a sample application that reads and writes to a TCP connection.
 
 Establishing a TCP connection requires a `Dial` from the client side and a
 `Listen` on the server side. Since `Listen` can accept multiple simultaneous
@@ -95,10 +78,10 @@ connections, it must call `Accept` for every connection it handles.
 Once you receive a `net.Conn` object to work with, there are three basic methods
 on the `net.Conn` interface: `Read`, `Write`, and `Close`.
 
-`Close` is self explanatory. `Read` and `Write` are blocking network calls that
+`Close` is self-explanatory. `Read` and `Write` are blocking network calls that
 block until some amount of data is read/written. They return error `io.EOF` when
-the connection is closed. This is the only way to know whether or not a
-connection has closed. Golang's HTTP package is no exception.
+the connection is closed. This is the only way to know whether a
+connection has closed. Go's HTTP package is no exception.
 
 Basic client that subscribes and then prints what it receives:
 
@@ -172,12 +155,12 @@ if writeErr != nil {
 }
 ```
 
-Notice how this example demonstrates something similar to a HTTP `GET` request
-and a response with body returned for that request. In fact, this is pretty much
-how it's implemented in Golang's `net/http`, except it has a lot more logic to
+Notice how this example demonstrates something similar to an HTTP `GET` request
+and the corresponding response. In fact, this is pretty much
+how it's implemented in Go's `net/http`, except it has a lot more logic to
 follow the protocol.
 
-Next time you use a http.ResponseWriter, think of it as a very thin wrapper on
+Next time you use a `http.ResponseWriter`, think of it as a very thin wrapper on
 top of `conn.Write` that only handles writing the HTTP headers for you.
 
 ## General Gorouter Architecture
@@ -188,12 +171,12 @@ components of Gorouter.
 ![architecture](images/architecture.svg)
 
 We'll go over some of these components later in this document, but this should
-serve as a good starting point to where to start looking for the important
+serve as a good starting point for finding the important
 components of Gorouter.
 
 `main.go` is also a good place to start looking to see how everything is
 initialized. Notice that `nats-subscriber` and `route_fetcher` are initialized
-in `main`, but they are depended on by the route registry.
+in `main`, but the route registry depends on them.
 
 ## Ifrit processes
 
@@ -226,8 +209,8 @@ Gorouter:
 
 Most of the request processing logic lives in the [negroni
 handlers](https://github.com/cloudfoundry/gorouter/blob/master/proxy/proxy.go).
-Note that it usually isn't possible to implement any Response modification logic
-in these handlers! That logic is mostly handled by the `ProxyRoundTripper`
+Note that it usually is not possible to implement any Response modification logic
+in these handlers! That logic is mostly handled by the `ProxyRoundTripper`.
 
 Nearly all of the important logic is implemented as part of a
 `ServeHTTP(http.ResponseWriter,*http.Request)` function.
@@ -255,18 +238,17 @@ Nearly all of the important logic is implemented as part of a
 
 [ProxyRoundTripper](https://github.com/cloudfoundry/gorouter/blob/master/proxy/round_tripper/proxy_round_tripper.go)
 
-This component executes the request to the next hop (whether it be to a backend
-or to a route service).
+This component executes the request to the next hop (either a backend or a route service).
 
 Its responsibilities are:
 
 1. Forwarding the request to either a backend or a route service (via the
    `RoundTrip` method).
-1. Retry failed requests.
 1. Select the next endpoint in a set of backends for the requested route.
    There are currently two different strategies for selecting the next
-   endpoint:: choose them in a Round Robin fashion, or choose the endpoint
+   endpoint: choose them in a Round Robin fashion, or choose the endpoint
    with the least connections.
+1. Retry failed requests.
 1. Setting trace headers on the response.
 1. Setting sticky session cookies on the response. Sticky sessions are cookies
    that allow clients to make requests to the same instance of the backend

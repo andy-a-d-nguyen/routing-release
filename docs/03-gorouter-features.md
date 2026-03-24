@@ -1,15 +1,15 @@
 ---
-title: Features
+title: Gorouter Features
 expires_at: never
 tags: [ routing-release,gorouter ]
 ---
 
 
-# Features
+# Gorouter Features
 
 ## Dynamic Routing Table
 
-Gorouters routing table is updated dynamically via the NATS message bus.  NATS
+Gorouter's routing table is updated dynamically via the NATS message bus. NATS
 can be deployed via BOSH with
 ([cf-deployment](https://github.com/cloudfoundry/cf-deployment)) or standalone
 using [nats-release](https://github.com/cloudfoundry/nats-release).
@@ -29,13 +29,13 @@ Domains]
 
 ### Registering Routes via NATS
 
-When the gorouter starts, it sends a `router.start` message to NATS.  This
+When Gorouter starts, it sends a `router.start` message to NATS. This
 message contains an interval that other components should then send
 `router.register` on, `minimumRegisterIntervalInSeconds`. It is recommended that
 clients should send `router.register` messages on this interval.  This
 `minimumRegisterIntervalInSeconds` value is configured through the
 `start_response_delay_interval` configuration property. Gorouter will prune
-routes that it considers to be stale based upon a separate "staleness" value,
+routes it considers stale based on a separate "staleness" value,
 `droplet_stale_threshold`, which defaults to 120 seconds. Gorouter will check if
 routes have become stale on an interval defined by
 `prune_stale_droplets_interval`, which defaults to 30 seconds. All of these
@@ -97,7 +97,7 @@ as well as being sent with requests to the endpoint in an HTTP header
 app identified by the `app` field. Gorouter includes an HTTP header
 `X-CF-InstanceId` set to this value with requests to the registered endpoint.
 
-`isolation_segment` determines which routers will register route. Only Gorouters
+`isolation_segment` determines which routers will register the route. Only Gorouters
 configured with the matching isolation segment will register the route.  If a
 value is not provided, the route will be registered only by Gorouters set to the
 `all` or `shared-and-segments` router table sharding modes.  Refer to the job
@@ -105,15 +105,12 @@ properties for [Gorouter]
 (https://github.com/cloudfoundry/routing-release/blob/develop/jobs/gorouter/spec)
 for more information.
 
-`tls_port` is the port that Gorouter will use to attempt TLS connections with
-the registered backends. Supported only when `router.backend.enable_tls: true`
-is configured in the manifest. `router.ca_certs` may be optionally configured
-with a CA, for backends certificates signed by custom CAs. For mutual
-authentication with backends, `router.backends.tls_pem` may be optionally
-provided. When `router.backend.enable_tls: true`, Gorouter will prefer
-`tls_port` over `port` if present in the NATS message. Otherwise, `port` will be
-preferred, and messages with only `tls_port` will be rejected and an error
-message logged.
+`tls_port` specifies the port Gorouter uses for TLS connections to registered backends. 
+Supported only when `router.backend.enable_tls: true` is configured in the manifest. 
+`router.ca_certs` may be optionally configured with a CA, for backends certificates signed by custom CAs. 
+For mutual authentication with backends, `router.backends.tls_pem` may be optionally provided. 
+When `router.backend.enable_tls: true`, Gorouter will prefer `tls_port` over `port` if present in the NATS message. 
+Otherwise, `port` will be preferred, and messages with only `tls_port` will be rejected and an error message logged.
 
 `server_cert_domain_san` (required when `tls_port` is present) Indicates a
 string that Gorouter will look for in a Subject Alternative Name (SAN) of the
@@ -135,8 +132,8 @@ URIs, and to the `router.unregister` subject to unregister URIs, respectively.
 
 ### Deleting a Route
 
-Routes can be deleted with the `router.unregister` nats message. The format of
-the `router.unregister` message the same as the `router.register` message, but
+Routes can be deleted with the `router.unregister` NATS message. The format of
+the `router.unregister` message is the same as the `router.register` message, but
 most information is ignored. Any route that matches the `host`, `port` and
 `uris` fields will be deleted.
 
@@ -178,10 +175,10 @@ If `router.backends.enable_tls` has been set to true, `tls_port` will be used as
 the definitive port when unregistering a route if present, otherwise `port` will
 be used. If `router.backends.enable_tls` is set to false, `port` will be
 preferred and any requests with only `tls_port` will be rejected and an error
-logged to the gorouter logs.
+logged to the Gorouter logs.
 
-Note that if `router.backends.enable_tls` is true and `host` and `tls_port`
-happens to match a registered `host` and `port` pair, this `host` and `port`
+Note that if `router.backends.enable_tls` is true and the `host` and `tls_port`
+pair matches a registered `host` and `port` pair, this `host` and `port`
 pair will be unregistered. The reverse is also true.
 
 > [!NOTE]
@@ -189,8 +186,8 @@ pair will be unregistered. The reverse is also true.
 > [gem](https://github.com/nats-io/ruby-nats) on a Cloud Foundry VM. It's
 > easiest on a VM that has ruby as a package, such as the API VM. Find the ruby
 > installed in `/var/vcap/packages`, export your PATH variable to include the bin
-> directory, and then run `gem install nats`. Find the nats login info from your
-> gorouter config and use it to connect to the nats cluster.
+> directory, and then run `gem install nats`. Find the NATS login info from your
+> Gorouter config and use it to connect to the NATS cluster.
 
 ## Health checking from a Load Balancer
 
@@ -199,7 +196,7 @@ must deploy it behind a highly-available load balancer (F5, AWS ELB, etc).
 
 Gorouter has a health endpoint `/health` on port 8443 (with TLS) and
 on 8080 (without TLS) that returns a 200 OK which indicates the Gorouter instance
-is healthy; any other response indicates unhealthy.  These port can be configured
+is healthy; any other response indicates unhealthy. These ports can be configured
 via the `router.status.port` and `router.status.tls.port` properties in the BOSH
 deployment manifest or via the `status.port` and `status.tls.port` properties
 under `/var/vcap/jobs/gorouter/config/gorouter.yml`
@@ -261,35 +258,30 @@ to ensure backward compatibility.
 
 ## Load Balancing
 
-The Gorouter is, in simple terms, a reverse proxy that load balances between
-many backend instances. The default load balancing algorithm that Gorouter will
-use is a simple **round-robin** strategy. Gorouter will retry a request if the
-chosen backend does not accept the TCP connection.
+Gorouter is, in simple terms, a reverse proxy that load balances between backend instances. 
+The default load balancing algorithm that Gorouter will use is a simple **round-robin** strategy. 
+Gorouter will retry a request if the chosen backend does not accept the TCP connection.
+The default load balancer is defined on platform level, and can optionally be 
+[configured per-route](https://docs.cloudfoundry.org/devguide/custom-per-route-options.html).  
 
 ### Round-Robin
-Default load balancing algorithm that gorouter will use or may be explicitly set
-in **gorouter.yml** `yaml default_balancing_algorithm: round-robin`
+Default load balancing algorithm that Gorouter will use, or may be explicitly set in **gorouter.yml**:
+
+```yaml
+default_balancing_algorithm: round-robin
+```
 
 ### Least-Connection
-The Gorouter also supports least connection based routing and this can be
+The Gorouter also supports least-connection based routing and this can be
 enabled in **gorouter.yml**
 
 ```yaml
 default_balancing_algorithm: least-connection
 ```
 
-Least connection based load balancing will select the endpoint with the least
+Least-connection based load balancing will select the endpoint with the least
 number of connections. If multiple endpoints match with the same number of least
 connections, it will select a random one within those least connections.
-
-> [!NOTE]
-> Gorouter currently only supports changing the load balancing strategy at
-the gorouter level and does not yet support a finer-grained level such as
-route-level. 
-> Therefore changing the load balancing algorithm from the default
-(round-robin) should be proceeded with caution.
->
-> Implementation of customizable LB Algorithm (per-route) is being tracked in [RFC-0027](https://github.com/cloudfoundry/community/issues/909)
 
 ## When terminating TLS in front of Gorouter with a component that does not support sending HTTP headers
 
@@ -317,8 +309,7 @@ properties:
 ### Enabling apps to detect the requestor's IP address using PROXY Protocol
 
 If you terminate TLS in front of Gorouter, your component should also send the
-`X-Forwarded-Proto` HTTP header in order for `X-Forwarded-For` header to
-applications can detect the requestor's IP address.
+`X-Forwarded-For` HTTP header so that applications can detect the requestor's IP address.
 
 If your TLS-terminating component does not support sending HTTP headers, you can
 use the PROXY protocol to send Gorouter the requestor's IP address.
@@ -393,7 +384,7 @@ The value of the `X-Cf-Routererror` header can be one of the following:
 |--------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | invalid_cf_app_instance_header | The provided value for the "X-Cf-App-Instance" header does not match the required format of `APP_GUID:INSTANCE_ID`.                                                                                            |
 | empty_host                     | The value for the "Host" header is empty, or the "Host" header is equivalent to the remote address. Some LB's optimistically set the "Host" header value with their IP address when there is no value present. |
-| unknown_route                  | The desired route does not exist in the gorouter's route table.                                                                                                                                                |
+| unknown_route                  | The desired route does not exist in Gorouter's route table.                                                                                                                                                    |
 | no_endpoints                   | There is an entry in the route table for the desired route, but there are no healthy endpoints available.                                                                                                      |
 | Connection Limit Reached       | The backends associated with the route have reached their max number of connections. The max connection number is set via the spec property `router.backends.max_conns`.                                       |
 | route_service_unsupported      | Route services are not enabled. This can be configured via the spec property `router.route_services_secret`. If the property is empty, route services are disabled.                                            |
