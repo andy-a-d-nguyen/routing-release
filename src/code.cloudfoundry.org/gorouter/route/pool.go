@@ -74,6 +74,28 @@ type ProxyRoundTripper interface {
 	CancelRequest(*http.Request)
 }
 
+type RoutingProperties struct {
+	RequestHeaders         *http.Header
+	LocallyOptimistic      bool
+	GlobalRoutingAlgorithm string
+	AZ                     string
+}
+
+type HashRoutingProperties struct {
+	Header        string
+	BalanceFactor float64
+}
+
+func (hrp *HashRoutingProperties) Equal(hrp2 *HashRoutingProperties) bool {
+	if hrp == nil && hrp2 == nil {
+		return true
+	}
+	if hrp == nil || hrp2 == nil {
+		return false
+	}
+	return hrp.Header == hrp2.Header && hrp.BalanceFactor == hrp2.BalanceFactor
+}
+
 type Endpoint struct {
 	ApplicationId          string
 	AvailabilityZone       string
@@ -186,6 +208,8 @@ type EndpointPool struct {
 	logger                 *slog.Logger
 	updatedAt              time.Time
 	LoadBalancingAlgorithm string
+	HashRoutingProperties  *HashRoutingProperties
+	HashLookupTable        MaglevLookup
 }
 
 type EndpointOpts struct {
@@ -248,10 +272,12 @@ type PoolOpts struct {
 	MaxConnsPerBackend     int64
 	Logger                 *slog.Logger
 	LoadBalancingAlgorithm string
+	HashHeader             string
+	HashBalanceFactor      float64
 }
 
 func NewPool(opts *PoolOpts) *EndpointPool {
-	return &EndpointPool{
+	pool := &EndpointPool{
 		endpoints:              make([]*endpointElem, 0, 1),
 		index:                  make(map[string]*endpointElem),
 		retryAfterFailure:      opts.RetryAfterFailure,
@@ -264,6 +290,14 @@ func NewPool(opts *PoolOpts) *EndpointPool {
 		updatedAt:              time.Now(),
 		LoadBalancingAlgorithm: opts.LoadBalancingAlgorithm,
 	}
+	if pool.LoadBalancingAlgorithm == config.LOAD_BALANCE_HB {
+		pool.HashLookupTable = NewMaglev(opts.Logger)
+		pool.HashRoutingProperties = &HashRoutingProperties{
+			Header:        opts.HashHeader,
+			BalanceFactor: opts.HashBalanceFactor,
+		}
+	}
+	return pool
 }
 
 func PoolsMatch(p1, p2 *EndpointPool) bool {
@@ -336,6 +370,9 @@ func (p *EndpointPool) Put(endpoint *Endpoint) PoolPutResult {
 		p.RouteSvcUrl = e.endpoint.RouteServiceUrl
 		p.setPoolLoadBalancingAlgorithm(e.endpoint)
 		e.updated = time.Now()
+		if p.LoadBalancingAlgorithm == config.LOAD_BALANCE_HB {
+			p.HashLookupTable.Add(e.endpoint.PrivateInstanceId)
+		}
 		p.Update()
 
 		return EndpointUpdated
@@ -348,7 +385,6 @@ func (p *EndpointPool) Put(endpoint *Endpoint) PoolPutResult {
 			updated:            time.Now(),
 			maxConnsPerBackend: p.maxConnsPerBackend,
 		}
-
 		p.endpoints = append(p.endpoints, e)
 
 		p.index[endpoint.CanonicalAddr()] = e
@@ -356,6 +392,9 @@ func (p *EndpointPool) Put(endpoint *Endpoint) PoolPutResult {
 
 		p.RouteSvcUrl = e.endpoint.RouteServiceUrl
 		p.setPoolLoadBalancingAlgorithm(e.endpoint)
+		if p.LoadBalancingAlgorithm == config.LOAD_BALANCE_HB {
+			p.HashLookupTable.Add(e.endpoint.PrivateInstanceId)
+		}
 		p.Update()
 
 		return EndpointAdded
@@ -433,23 +472,57 @@ func (p *EndpointPool) removeEndpoint(e *endpointElem) {
 	delete(p.index, e.endpoint.CanonicalAddr())
 	delete(p.index, e.endpoint.PrivateInstanceId)
 	p.Update()
+
+	if p.LoadBalancingAlgorithm == config.LOAD_BALANCE_HB {
+		p.HashLookupTable.Remove(e.endpoint.PrivateInstanceId)
+	}
+
 }
 
-func (p *EndpointPool) Endpoints(logger *slog.Logger, initial string, mustBeSticky bool, azPreference string, az string) EndpointIterator {
-	switch p.LoadBalancingAlgorithm {
+func (p *EndpointPool) Endpoints(logger *slog.Logger, initial string, mustBeSticky bool, routingProps RoutingProperties) EndpointIterator {
+	routingAlgorithm := p.LoadBalancingAlgorithm
+	// Handle hash-based routing as special case
+	if routingAlgorithm == config.LOAD_BALANCE_HB {
+		// TODO: add VCAP-ID to logs after extracting handlers.VcapRequestIdHeader to new package "constants" (to avoid cyclic imports)
+		headerValue := p.GetValidHashHeaderValue(routingProps.RequestHeaders, logger)
+		if headerValue != "" {
+			return NewHashBased(logger, p, initial, mustBeSticky, headerValue)
+		}
+		routingAlgorithm = routingProps.GlobalRoutingAlgorithm
+	}
+
+	switch routingAlgorithm {
 	case config.LOAD_BALANCE_LC:
 		logger.Debug("endpoint-iterator-with-least-connection-lb-algo")
-		return NewLeastConnection(logger, p, initial, mustBeSticky, azPreference == config.AZ_PREF_LOCAL, az)
+		return NewLeastConnection(logger, p, initial, mustBeSticky, routingProps.LocallyOptimistic, routingProps.AZ)
 	case config.LOAD_BALANCE_RR:
 		logger.Debug("endpoint-iterator-with-round-robin-lb-algo")
-		return NewRoundRobin(logger, p, initial, mustBeSticky, azPreference == config.AZ_PREF_LOCAL, az)
+		return NewRoundRobin(logger, p, initial, mustBeSticky, routingProps.LocallyOptimistic, routingProps.AZ)
 	default:
 		logger.Error("invalid-pool-load-balancing-algorithm",
-			slog.String("poolLBAlgorithm", p.LoadBalancingAlgorithm),
+			slog.String("poolLBAlgorithm", routingAlgorithm),
 			slog.String("Host", p.host),
 			slog.String("Path", p.contextPath))
-		return NewRoundRobin(logger, p, initial, mustBeSticky, azPreference == config.AZ_PREF_LOCAL, az)
+		logger.Debug("endpoint-iterator-with-round-robin-lb-algo")
+		return NewRoundRobin(logger, p, initial, mustBeSticky, routingProps.LocallyOptimistic, routingProps.AZ)
 	}
+}
+
+func (p *EndpointPool) GetValidHashHeaderValue(header *http.Header, logger *slog.Logger) string {
+	if p.HashRoutingProperties == nil || p.HashRoutingProperties.Header == "" {
+		logger.Error("hash-routing-properties-missing", slog.String("host", p.Host()))
+		return ""
+	}
+
+	hashHeader := header.Get(p.HashRoutingProperties.Header)
+	if hashHeader == "" {
+		logger.Info("hash-based-routing-header-value-not-found",
+			slog.String("Host", p.host),
+			slog.String("Path", p.contextPath),
+		)
+		return ""
+	}
+	return hashHeader
 }
 
 func (p *EndpointPool) NumEndpoints() int {
@@ -595,17 +668,42 @@ func (p *EndpointPool) MarshalJSON() ([]byte, error) {
 
 // setPoolLoadBalancingAlgorithm overwrites the load balancing algorithm of a pool by that of a specified endpoint, if that is valid.
 func (p *EndpointPool) setPoolLoadBalancingAlgorithm(endpoint *Endpoint) {
-	if len(endpoint.LoadBalancingAlgorithm) > 0 && endpoint.LoadBalancingAlgorithm != p.LoadBalancingAlgorithm {
+	if endpoint.LoadBalancingAlgorithm == "" {
+		return
+	}
+
+	if endpoint.LoadBalancingAlgorithm != p.LoadBalancingAlgorithm {
 		if config.IsLoadBalancingAlgorithmValid(endpoint.LoadBalancingAlgorithm) {
 			p.LoadBalancingAlgorithm = endpoint.LoadBalancingAlgorithm
 			p.logger.Debug("setting-pool-load-balancing-algorithm-to-that-of-an-endpoint",
 				slog.String("endpointLBAlgorithm", endpoint.LoadBalancingAlgorithm),
 				slog.String("poolLBAlgorithm", p.LoadBalancingAlgorithm))
+
 		} else {
 			p.logger.Error("invalid-endpoint-load-balancing-algorithm-provided-keeping-pool-lb-algo",
 				slog.String("endpointLBAlgorithm", endpoint.LoadBalancingAlgorithm),
 				slog.String("poolLBAlgorithm", p.LoadBalancingAlgorithm))
 		}
+	}
+	p.prepareHashBasedRouting(endpoint)
+}
+
+func (p *EndpointPool) prepareHashBasedRouting(endpoint *Endpoint) {
+	if p.LoadBalancingAlgorithm != config.LOAD_BALANCE_HB {
+		return
+	}
+	if p.HashLookupTable == nil {
+		logger := p.logger.With(slog.String("host", p.Host()))
+		p.HashLookupTable = NewMaglev(logger)
+	}
+
+	newProps := &HashRoutingProperties{
+		Header:        endpoint.HashHeaderName,
+		BalanceFactor: endpoint.HashBalanceFactor,
+	}
+
+	if p.HashRoutingProperties == nil || !p.HashRoutingProperties.Equal(newProps) {
+		p.HashRoutingProperties = newProps
 	}
 }
 
@@ -636,7 +734,7 @@ func (e *Endpoint) MarshalJSON() ([]byte, error) {
 		ServerCertDomainSAN    string            `json:"server_cert_domain_san,omitempty"`
 		LoadBalancingAlgorithm string            `json:"load_balancing_algorithm,omitempty"`
 		HashHeader             string            `json:"hash_header,omitempty"`
-		HashBalance            float64           `json:"hash_balance,omitempty"`
+		HashBalance            *float64          `json:"hash_balance,omitempty"` // omitempty on a float64 field will omit the field when the value is 0.0, to keep 0 use pointer of float64
 	}
 
 	jsonObj.Address = e.addr
@@ -651,8 +749,11 @@ func (e *Endpoint) MarshalJSON() ([]byte, error) {
 	jsonObj.ServerCertDomainSAN = e.ServerCertDomainSAN
 	jsonObj.LoadBalancingAlgorithm = e.LoadBalancingAlgorithm
 	jsonObj.HashHeader = e.HashHeaderName
-	jsonObj.HashBalance = e.HashBalanceFactor
 
+	// marshal balance factor only if load balancing algorithm is hash-based
+	if e.LoadBalancingAlgorithm == config.LOAD_BALANCE_HB {
+		jsonObj.HashBalance = &e.HashBalanceFactor
+	}
 	return json.Marshal(jsonObj)
 }
 
