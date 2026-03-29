@@ -7,15 +7,15 @@ replace github.com/cactus/go-statsd-client => github.com/cactus/go-statsd-client
 require (
 	code.cloudfoundry.org/cfhttp/v2 v2.72.0
 	code.cloudfoundry.org/clock v1.64.0
-	code.cloudfoundry.org/debugserver v0.89.0
-	code.cloudfoundry.org/diego-logging-client v0.97.0
+	code.cloudfoundry.org/debugserver v0.90.0
+	code.cloudfoundry.org/diego-logging-client v0.98.0
 	code.cloudfoundry.org/eventhub v0.67.0
 	code.cloudfoundry.org/go-loggregator/v9 v9.2.1
-	code.cloudfoundry.org/go-metric-registry v0.0.0-20260316221732-b5ae994e6b10
+	code.cloudfoundry.org/go-metric-registry v0.0.0-20260325091030-e6272bdc60ad
 	code.cloudfoundry.org/lager/v3 v3.64.0
 	code.cloudfoundry.org/localip v0.66.0
 	code.cloudfoundry.org/locket v0.0.0-20251117222557-be612341b29d
-	code.cloudfoundry.org/tlsconfig v0.48.0
+	code.cloudfoundry.org/tlsconfig v0.49.0
 	github.com/armon/go-proxyproto v0.1.0
 	github.com/cactus/go-statsd-client v3.2.1+incompatible
 	github.com/cloudfoundry-community/go-uaa v0.3.6
@@ -28,8 +28,8 @@ require (
 	github.com/jinzhu/gorm v1.9.16
 	github.com/kisielk/errcheck v1.10.0
 	github.com/lib/pq v1.12.0
-	github.com/nats-io/nats-server/v2 v2.12.5
-	github.com/nats-io/nats.go v1.49.0
+	github.com/nats-io/nats-server/v2 v2.12.6
+	github.com/nats-io/nats.go v1.50.0
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
 	github.com/onsi/ginkgo/v2 v2.28.1
 	github.com/onsi/gomega v1.39.1
@@ -53,7 +53,7 @@ require (
 )
 
 require (
-	code.cloudfoundry.org/bbs v0.0.0-20260319204745-f9b7322ba965 // indirect
+	code.cloudfoundry.org/bbs v0.0.0-20260323203855-1402bd61fc46 // indirect
 	code.cloudfoundry.org/durationjson v0.67.0 // indirect
 	code.cloudfoundry.org/go-diodes v0.0.0-20260209061029-a81ffbc46978 // indirect
 	code.cloudfoundry.org/inigo v0.0.0-20210615140442-4bdc4f6e44d5 // indirect
@@ -77,7 +77,7 @@ require (
 	github.com/honeycombio/libhoney-go v1.26.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
-	github.com/jackc/pgx/v5 v5.9.0 // indirect
+	github.com/jackc/pgx/v5 v5.9.1 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/klauspost/compress v1.18.5 // indirect
