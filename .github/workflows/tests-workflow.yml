@@ -53,14 +53,27 @@ jobs:
         path: |
           repo-artifact.tar.gz
           ci-artifact.tar.gz
+  determine-image-tag:
+    if: github.event.label.name == 'ready-to-run'
+    runs-on: ubuntu-latest
+    outputs:
+      go_version: ${{ steps.get-version.outputs.go_version }}
+    steps:
+    - name: checkout ci repo
+      uses: actions/checkout@v4
+      with:
+        repository: cloudfoundry/wg-app-platform-runtime-ci
+        sparse-checkout: go-version.json
+        sparse-checkout-cone-mode: false
+    - name: get-version
+      id: get-version
+      run: |
+        version=$(jq -r '.releases.routing // .default' go-version.json)
+        echo "go_version=${version}" >> "$GITHUB_OUTPUT"
   template-tests:
     runs-on: ubuntu-latest
-    needs: repo-clone
-    container:
-      image: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-build
-      credentials:
-        username: _json_key
-        password: ${{ secrets.GCP_SERVICE_ACCOUNT_TAS_RUNTIME_BUILD_IMAGE_READER }}
+    needs: [repo-clone, determine-image-tag]
+    container: cloudfoundry/tas-runtime-build:${{ needs.determine-image-tag.outputs.go_version }}
     steps:
     - name: Download artifact
       uses: actions/download-artifact@v4
@@ -74,18 +87,16 @@ jobs:
         "${GITHUB_WORKSPACE}"/ci/shared/tasks/run-tests-templates/task.bash
   test-on-mysql-5-7:
     runs-on: ubuntu-latest
-    needs: repo-clone
-    container:
-      image: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-mysql-5.7
-      credentials:
-        username: _json_key
-        password: ${{ secrets.GCP_SERVICE_ACCOUNT_TAS_RUNTIME_BUILD_IMAGE_READER }}
+    needs: [repo-clone, determine-image-tag]
+    container: cloudfoundry/tas-runtime-mysql-5.7:${{ needs.determine-image-tag.outputs.go_version }}
     steps:
     - name: Download artifact
       uses: actions/download-artifact@v4
       with:
         name: repo
-    - run: "tar -xzvf repo-artifact.tar.gz\ntar -xzvf ci-artifact.tar.gz \n"
+    - run: |
+        tar -xzvf repo-artifact.tar.gz
+        tar -xzvf ci-artifact.tar.gz
     - name: build binaries
       run: |
         export DEFAULT_PARAMS="${GITHUB_WORKSPACE}/ci/routing-release/default-params/build-binaries/linux.yml"
@@ -110,12 +121,8 @@ jobs:
         "${GITHUB_WORKSPACE}"/ci/shared/tasks/run-bin-test/task.bash --keep-going --trace -r --fail-on-pending --randomize-all --nodes=7 --race --timeout 30m --flake-attempts 2
   test-repos-withoutdb:
     runs-on: ubuntu-latest
-    needs: repo-clone
-    container:
-      image: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-build
-      credentials:
-        username: _json_key
-        password: ${{ secrets.GCP_SERVICE_ACCOUNT_TAS_RUNTIME_BUILD_IMAGE_READER }}
+    needs: [repo-clone, determine-image-tag]
+    container: cloudfoundry/tas-runtime-build:${{ needs.determine-image-tag.outputs.go_version }}
     steps:
     - name: Download artifact
       uses: actions/download-artifact@v4
@@ -148,12 +155,8 @@ jobs:
         "${GITHUB_WORKSPACE}"/ci/shared/tasks/run-bin-test/task.bash --keep-going --trace -r --fail-on-pending --randomize-all --nodes=7 --race --timeout 30m --flake-attempts 2
   test-on-postgres:
     runs-on: ubuntu-latest
-    needs: repo-clone
-    container:
-      image: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-postgres
-      credentials:
-        username: _json_key
-        password: ${{ secrets.GCP_SERVICE_ACCOUNT_TAS_RUNTIME_BUILD_IMAGE_READER }}
+    needs: [repo-clone, determine-image-tag]
+    container: cloudfoundry/tas-runtime-postgres:${{ needs.determine-image-tag.outputs.go_version }}
     steps:
     - name: Download artifact
       uses: actions/download-artifact@v4
@@ -166,19 +169,19 @@ jobs:
       run: |
         export DEFAULT_PARAMS="${GITHUB_WORKSPACE}/ci/routing-release/default-params/build-binaries/linux.yml"
         "${GITHUB_WORKSPACE}"/ci/shared/tasks/build-binaries/task.bash
-    - name: gorouter-mysql
+    - name: gorouter-postgres
       env:
         DIR: src/code.cloudfoundry.org/gorouter
         DB: postgres
       run: |
         "${GITHUB_WORKSPACE}"/ci/shared/tasks/run-bin-test/task.bash --keep-going --trace -r --fail-on-pending --randomize-all --nodes=7 --race --timeout 30m --flake-attempts 2
-    - name: cf-tcp-router-mysql
+    - name: cf-tcp-router-postgres
       env:
         DIR: src/code.cloudfoundry.org/cf-tcp-router
         DB: postgres
       run: |
         "${GITHUB_WORKSPACE}"/ci/shared/tasks/run-bin-test/task.bash --keep-going --trace -r --fail-on-pending --randomize-all --nodes=7 --race --timeout 30m --flake-attempts 2
-    - name: routing-api-mysql
+    - name: routing-api-postgres
       env:
         DIR: src/code.cloudfoundry.org/routing-api
         DB: postgres
@@ -186,12 +189,8 @@ jobs:
         "${GITHUB_WORKSPACE}"/ci/shared/tasks/run-bin-test/task.bash --keep-going --trace -r --fail-on-pending --randomize-all --nodes=7 --race --timeout 30m --flake-attempts 2
   test-on-mysql-8-0:
     runs-on: ubuntu-latest
-    needs: repo-clone
-    container:
-      image: us-central1-docker.pkg.dev/app-runtime-platform-wg/dockerhub-mirror/cloudfoundry/tas-runtime-mysql-8.0
-      credentials:
-        username: _json_key
-        password: ${{ secrets.GCP_SERVICE_ACCOUNT_TAS_RUNTIME_BUILD_IMAGE_READER }}
+    needs: [repo-clone, determine-image-tag]
+    container: cloudfoundry/tas-runtime-mysql-8.0:${{ needs.determine-image-tag.outputs.go_version }}
     steps:
     - name: Download artifact
       uses: actions/download-artifact@v4
