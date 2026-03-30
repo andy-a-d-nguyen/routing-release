@@ -59,6 +59,32 @@ var _ = Describe("RouteServicesServer", func() {
 
 			Expect(resp.StatusCode).To(Equal(http.StatusTeapot))
 		})
+
+		It("rejects connections that only offer disallowed ECDSA cipher suites", func() {
+			rt := rss.GetRoundTripper()
+			clientCfg := rt.TLSClientConfig().Clone()
+			// These are the three ciphers that must not be negotiable on the internal port.
+			clientCfg.CipherSuites = []uint16{
+				tls.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+				tls.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
+				tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
+			}
+			// Force TLS 1.2 so cipher suite negotiation applies.
+			clientCfg.MaxVersion = tls.VersionTLS12
+
+			_, err := tls.Dial("tcp", fmt.Sprintf("127.0.0.1:%d", cfg.RouteServicesServerPort), clientCfg)
+			Expect(err).To(HaveOccurred())
+		})
+	})
+
+	Describe("GetRoundTripper", func() {
+		It("hardcodes ECDSA GCM cipher suites in the client config", func() {
+			clientCfg := rss.GetRoundTripper().TLSClientConfig()
+			Expect(clientCfg.CipherSuites).To(ConsistOf(
+				tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+				tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+			))
+		})
 	})
 
 	Describe("ReadHeaderTimeout", func() {
