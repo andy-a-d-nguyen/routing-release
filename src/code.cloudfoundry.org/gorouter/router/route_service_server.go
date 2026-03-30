@@ -1,3 +1,8 @@
+// @AI-Generated
+// Generated in whole or in part by Cursor with a mix of different LLM models (Auto select mode)
+// Description:
+// 2026-03-17: Restrict cipher suites on internal route services server to ECDSA GCM suites (TNZ-79284)
+
 package router
 
 import (
@@ -83,6 +88,13 @@ func (rs *RouteServicesServer) Serve(handler http.Handler, errChan chan error) e
 		ClientAuth:   tls.RequireAndVerifyClientCert,
 		Certificates: []tls.Certificate{rs.serverCert},
 		ClientCAs:    rs.rootCA,
+		// The internal server always uses ephemeral ECDSA P-256 certs, so we
+		// hardcode the two secure ECDSA GCM cipher suites for TLS 1.2.
+		// TLS 1.3 cipher suites are not configurable in Go and are unaffected.
+		CipherSuites: []uint16{
+			tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+			tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+		},
 	}
 
 	go func() {
@@ -104,6 +116,11 @@ func (rs *RouteServicesServer) GetRoundTripper() RouteServiceRoundTripper {
 			TLSClientConfig: &tls.Config{
 				Certificates: []tls.Certificate{rs.clientCert},
 				RootCAs:      rs.rootCA,
+				// Mirror the server's hardcoded ECDSA GCM cipher suites.
+				CipherSuites: []uint16{
+					tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+					tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+				},
 			},
 		},
 	}
