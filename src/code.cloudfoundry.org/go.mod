@@ -8,14 +8,14 @@ require (
 	code.cloudfoundry.org/cfhttp/v2 v2.72.0
 	code.cloudfoundry.org/clock v1.64.0
 	code.cloudfoundry.org/debugserver v0.90.0
-	code.cloudfoundry.org/diego-logging-client v0.98.0
+	code.cloudfoundry.org/diego-logging-client v0.99.0
 	code.cloudfoundry.org/eventhub v0.67.0
 	code.cloudfoundry.org/go-loggregator/v9 v9.2.1
-	code.cloudfoundry.org/go-metric-registry v0.0.0-20260325091030-e6272bdc60ad
+	code.cloudfoundry.org/go-metric-registry v0.0.0-20260401052628-da46951e1a8b
 	code.cloudfoundry.org/lager/v3 v3.64.0
 	code.cloudfoundry.org/localip v0.66.0
 	code.cloudfoundry.org/locket v0.0.0-20251117222557-be612341b29d
-	code.cloudfoundry.org/tlsconfig v0.49.0
+	code.cloudfoundry.org/tlsconfig v0.50.0
 	github.com/armon/go-proxyproto v0.1.0
 	github.com/cactus/go-statsd-client v3.2.1+incompatible
 	github.com/cloudfoundry-community/go-uaa v0.3.6
@@ -27,7 +27,7 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/jinzhu/gorm v1.9.16
 	github.com/kisielk/errcheck v1.10.0
-	github.com/lib/pq v1.12.0
+	github.com/lib/pq v1.12.3
 	github.com/nats-io/nats-server/v2 v2.12.6
 	github.com/nats-io/nats.go v1.50.0
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
@@ -40,14 +40,14 @@ require (
 	github.com/urfave/cli v1.22.17
 	github.com/urfave/negroni/v3 v3.1.1
 	github.com/vito/go-sse v1.1.3
-	go.step.sm/crypto v0.77.1
+	go.step.sm/crypto v0.77.2
 	go.uber.org/zap v1.27.1
 	go.uber.org/zap/exp v0.3.0
 	golang.org/x/crypto v0.49.0
 	golang.org/x/net v0.52.0
 	golang.org/x/oauth2 v0.36.0
 	golang.org/x/tools v0.43.0
-	google.golang.org/grpc v1.79.3
+	google.golang.org/grpc v1.80.0
 	google.golang.org/protobuf v1.36.11
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -73,7 +73,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/go-tpm v0.9.8 // indirect
-	github.com/google/pprof v0.0.0-20260302011040-a15ffb7f9dcc // indirect
+	github.com/google/pprof v0.0.0-20260402051712-545e8a4df936 // indirect
 	github.com/honeycombio/libhoney-go v1.26.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
@@ -103,6 +103,6 @@ require (
 	golang.org/x/sys v0.42.0 // indirect
 	golang.org/x/text v0.35.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260319201613-d00831a3d3e7 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260401024825-9d38bb4040a9 // indirect
 	gopkg.in/alexcesaro/statsd.v2 v2.0.0 // indirect
 )
