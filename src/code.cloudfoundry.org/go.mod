@@ -5,15 +5,15 @@ go 1.25.0
 replace github.com/cactus/go-statsd-client => github.com/cactus/go-statsd-client v2.0.2-0.20150911070441-6fa055a7b594+incompatible
 
 require (
-	code.cloudfoundry.org/cfhttp/v2 v2.72.0
-	code.cloudfoundry.org/clock v1.64.0
-	code.cloudfoundry.org/debugserver v0.90.0
-	code.cloudfoundry.org/diego-logging-client v0.99.0
-	code.cloudfoundry.org/eventhub v0.67.0
+	code.cloudfoundry.org/cfhttp/v2 v2.73.0
+	code.cloudfoundry.org/clock v1.65.0
+	code.cloudfoundry.org/debugserver v0.91.0
+	code.cloudfoundry.org/diego-logging-client v0.100.0
+	code.cloudfoundry.org/eventhub v0.68.0
 	code.cloudfoundry.org/go-loggregator/v9 v9.2.1
-	code.cloudfoundry.org/go-metric-registry v0.0.0-20260401052628-da46951e1a8b
-	code.cloudfoundry.org/lager/v3 v3.64.0
-	code.cloudfoundry.org/localip v0.66.0
+	code.cloudfoundry.org/go-metric-registry v0.0.0-20260409052016-6e68d03a192f
+	code.cloudfoundry.org/lager/v3 v3.65.0
+	code.cloudfoundry.org/localip v0.67.0
 	code.cloudfoundry.org/locket v0.0.0-20251117222557-be612341b29d
 	code.cloudfoundry.org/tlsconfig v0.50.0
 	github.com/armon/go-proxyproto v0.1.0
@@ -43,10 +43,10 @@ require (
 	go.step.sm/crypto v0.77.2
 	go.uber.org/zap v1.27.1
 	go.uber.org/zap/exp v0.3.0
-	golang.org/x/crypto v0.49.0
-	golang.org/x/net v0.52.0
+	golang.org/x/crypto v0.50.0
+	golang.org/x/net v0.53.0
 	golang.org/x/oauth2 v0.36.0
-	golang.org/x/tools v0.43.0
+	golang.org/x/tools v0.44.0
 	google.golang.org/grpc v1.80.0
 	google.golang.org/protobuf v1.36.11
 	gopkg.in/yaml.v3 v3.0.1
@@ -54,7 +54,7 @@ require (
 
 require (
 	code.cloudfoundry.org/bbs v0.0.0-20260323203855-1402bd61fc46 // indirect
-	code.cloudfoundry.org/durationjson v0.67.0 // indirect
+	code.cloudfoundry.org/durationjson v0.68.0 // indirect
 	code.cloudfoundry.org/go-diodes v0.0.0-20260209061029-a81ffbc46978 // indirect
 	code.cloudfoundry.org/inigo v0.0.0-20210615140442-4bdc4f6e44d5 // indirect
 	filippo.io/edwards25519 v1.2.0 // indirect
@@ -98,11 +98,11 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/mod v0.34.0 // indirect
+	golang.org/x/mod v0.35.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/sys v0.42.0 // indirect
-	golang.org/x/text v0.35.0 // indirect
+	golang.org/x/sys v0.43.0 // indirect
+	golang.org/x/text v0.36.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260401024825-9d38bb4040a9 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260406210006-6f92a3bedf2d // indirect
 	gopkg.in/alexcesaro/statsd.v2 v2.0.0 // indirect
 )
