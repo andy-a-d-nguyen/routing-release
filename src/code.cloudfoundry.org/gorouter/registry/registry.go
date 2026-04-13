@@ -108,10 +108,12 @@ func (r *RouteRegistry) Register(uri route.Uri, endpoint *route.Endpoint) {
 		if r.logger.Enabled(context.Background(), slog.LevelInfo) {
 			r.logger.Info("endpoint-registered", buildSlogAttrs(uri, endpoint)...)
 		}
+		r.reportEndpointsPerPool(uri, endpoint)
 	case route.EndpointUpdated:
 		if r.logger.Enabled(context.Background(), slog.LevelInfo) {
 			r.logger.Info("endpoint-registered", buildSlogAttrs(uri, endpoint)...)
 		}
+		r.reportEndpointsPerPool(uri, endpoint)
 	case route.EndpointUnmodified:
 		if r.logger.Enabled(context.Background(), slog.LevelDebug) {
 			r.logger.Debug("endpoint-not-registered", buildSlogAttrs(uri, endpoint)...)
@@ -186,6 +188,7 @@ func (r *RouteRegistry) Unregister(uri route.Uri, endpoint *route.Endpoint) {
 
 	if endpointRemoved {
 		r.logger.Info("endpoint-unregistered", buildSlogAttrs(uri, endpoint)...)
+		r.reportEndpointsPerPool(uri, endpoint)
 	} else {
 		if r.logger.Enabled(context.Background(), slog.LevelDebug) {
 			r.logger.Debug("endpoint-not-unregistered", buildSlogAttrs(uri, endpoint)...)
@@ -420,6 +423,8 @@ func (r *RouteRegistry) pruneStaleDroplets() {
 
 	r.byURI.EachNodeWithPool(func(t *container.Trie) {
 		endpoints := t.Pool.PruneEndpoints()
+		lbAlgo := t.Pool.LoadBalancingAlgorithm
+		uri := t.ToPath()
 		if r.EmptyPoolResponseCode503 && r.EmptyPoolTimeout > 0 {
 			if time.Since(t.Pool.LastUpdated()) > r.EmptyPoolTimeout {
 				t.Snip()
@@ -438,11 +443,19 @@ func (r *RouteRegistry) pruneStaleDroplets() {
 				isolationSegment = "-"
 			}
 			r.logger.Info("pruned-route",
-				slog.String("uri", t.ToPath()),
+				slog.String("uri", uri),
 				slog.Any("endpoints", addresses),
 				slog.String("isolation_segment", isolationSegment),
 			)
 			r.reporter.CaptureRoutesPruned(uint64(len(endpoints)))
+
+			if lbAlgo == config.LOAD_BALANCE_HB {
+				if t.Pool == nil || t.Pool.NumEndpoints() == 0 {
+					r.reporter.UncaptureEndpointsPerPool(uri, config.LOAD_BALANCE_HB)
+				} else {
+					r.reporter.CaptureEndpointsPerPool(t.Pool.NumEndpoints(), uri, config.LOAD_BALANCE_HB)
+				}
+			}
 		}
 	})
 }
@@ -459,6 +472,25 @@ func (r *RouteRegistry) freshenRoutes() {
 	r.byURI.EachNodeWithPool(func(t *container.Trie) {
 		t.Pool.MarkUpdated(now)
 	})
+}
+
+// reportEndpointsPerPool reports the endpoints_per_pool metric for hash-based (HB) route pools.
+// For non-HB endpoints, it deletes any stale HB metric entries (e.g. after switching away from HB).
+func (r *RouteRegistry) reportEndpointsPerPool(uri route.Uri, endpoint *route.Endpoint) {
+	if endpoint.LoadBalancingAlgorithm != config.LOAD_BALANCE_HB {
+		r.reporter.UncaptureEndpointsPerPool(string(uri), config.LOAD_BALANCE_HB)
+		return
+	}
+
+	r.RLock()
+	pool := r.byURI.Find(uri.RouteKey())
+	r.RUnlock()
+
+	if pool == nil || pool.NumEndpoints() == 0 {
+		r.reporter.UncaptureEndpointsPerPool(string(uri), config.LOAD_BALANCE_HB)
+		return
+	}
+	r.reporter.CaptureEndpointsPerPool(pool.NumEndpoints(), string(uri), config.LOAD_BALANCE_HB)
 }
 
 func splitHostAndContextPath(uri route.Uri) (string, string) {
