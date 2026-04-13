@@ -587,14 +587,14 @@ var _ = Describe("Subscriber", func() {
 			})
 		})
 
-		Context("when the message contains an empty load balancing algorithm option", func() {
+		Context("when the message contains an empty or absent load balancing algorithm option", func() {
 			JustBeforeEach(func() {
 				sub = mbus.NewSubscriber(natsClient, registry, cfg, reconnected, logger.Logger)
 				process = ifrit.Invoke(sub)
 				Eventually(process.Ready()).Should(BeClosed())
 			})
 
-			It("endpoint is constructed with the empty string load balancing algorithm", func() {
+			It("endpoint is constructed with the global default load balancing algorithm", func() {
 				var msg = mbus.RegistryMessage{
 					Host:     "host",
 					App:      "app",
@@ -610,14 +610,14 @@ var _ = Describe("Subscriber", func() {
 				Eventually(registry.RegisterCallCount).Should(Equal(1))
 				_, originalEndpoint := registry.RegisterArgsForCall(0)
 				expectedEndpoint := route.NewEndpoint(&route.EndpointOpts{
-					Host:     "host",
-					AppId:    "app",
-					Protocol: "http2",
+					Host:                   "host",
+					AppId:                  "app",
+					Protocol:               "http2",
+					LoadBalancingAlgorithm: config.LOAD_BALANCE_RR,
 				})
 
 				Expect(originalEndpoint).To(Equal(expectedEndpoint))
 			})
-
 		})
 
 		Context("when the message contains hash-based load balancing options", func() {

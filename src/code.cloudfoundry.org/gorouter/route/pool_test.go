@@ -375,20 +375,6 @@ var _ = Describe("EndpointPool", func() {
 				Eventually(logger).Should(gbytes.Say(`setting-pool-load-balancing-algorithm-to-that-of-an-endpoint`))
 			})
 
-			It("is an empty string and the load balancing algorithm of a pool is kept", func() {
-				expectedLBAlgo := config.LOAD_BALANCE_RR
-				pool := route.NewPool(&route.PoolOpts{
-					Logger:                 logger.Logger,
-					LoadBalancingAlgorithm: expectedLBAlgo,
-				})
-				endpoint := route.NewEndpoint(&route.EndpointOpts{
-					Host: "host-1", Port: 1234,
-					RouteServiceUrl: "url",
-				})
-				pool.Put(endpoint)
-				Expect(pool.LoadBalancingAlgorithm).To(Equal(expectedLBAlgo))
-			})
-
 			It("is not specified in the endpoint options and the load balancing algorithm of a pool is kept", func() {
 				expectedLBAlgo := config.LOAD_BALANCE_RR
 				pool := route.NewPool(&route.PoolOpts{
@@ -486,9 +472,40 @@ var _ = Describe("EndpointPool", func() {
 
 		})
 
-	})
+		Context("When removing a per-route load balancing algorithm", func() {
+			It("reverts the pool to the platform default and cleans up HB state", func() {
+				pool := route.NewPool(&route.PoolOpts{
+					Logger:                 logger.Logger,
+					LoadBalancingAlgorithm: config.LOAD_BALANCE_RR,
+				})
 
-	Context("RouteServiceUrl", func() {
+				// Set up HB routing on the pool
+				hbEndpoint := route.NewEndpoint(&route.EndpointOpts{
+					Host:                   "host-1",
+					Port:                   1234,
+					PrivateInstanceId:      "id-1",
+					LoadBalancingAlgorithm: config.LOAD_BALANCE_HB,
+					HashBalanceFactor:      1.25,
+					HashHeaderName:         "X-Tenant",
+				})
+				pool.Put(hbEndpoint)
+				Expect(pool.LoadBalancingAlgorithm).To(Equal(config.LOAD_BALANCE_HB))
+				Expect(pool.HashLookupTable).ToNot(BeNil())
+				Expect(pool.HashRoutingProperties).ToNot(BeNil())
+
+				// Revert to the platform default (as the subscriber would do when the option is removed)
+				resetEndpoint := route.NewEndpoint(&route.EndpointOpts{
+					Host:                   "host-1",
+					Port:                   1234,
+					PrivateInstanceId:      "id-1",
+					LoadBalancingAlgorithm: config.LOAD_BALANCE_RR,
+				})
+				pool.Put(resetEndpoint)
+				Expect(pool.LoadBalancingAlgorithm).To(Equal(config.LOAD_BALANCE_RR))
+				Expect(pool.HashLookupTable).To(BeNil())
+				Expect(pool.HashRoutingProperties).To(BeNil())
+			})
+		})
 		It("returns the route_service_url associated with the pool", func() {
 			endpoint := &route.Endpoint{}
 			endpointRS := &route.Endpoint{RouteServiceUrl: "my-url"}

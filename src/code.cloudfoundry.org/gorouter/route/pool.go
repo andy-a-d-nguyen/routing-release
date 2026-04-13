@@ -668,17 +668,19 @@ func (p *EndpointPool) MarshalJSON() ([]byte, error) {
 
 // setPoolLoadBalancingAlgorithm overwrites the load balancing algorithm of a pool by that of a specified endpoint, if that is valid.
 func (p *EndpointPool) setPoolLoadBalancingAlgorithm(endpoint *Endpoint) {
-	if endpoint.LoadBalancingAlgorithm == "" {
-		return
-	}
-
 	if endpoint.LoadBalancingAlgorithm != p.LoadBalancingAlgorithm {
 		if config.IsLoadBalancingAlgorithmValid(endpoint.LoadBalancingAlgorithm) {
+			previousAlgorithm := p.LoadBalancingAlgorithm
 			p.LoadBalancingAlgorithm = endpoint.LoadBalancingAlgorithm
 			p.logger.Debug("setting-pool-load-balancing-algorithm-to-that-of-an-endpoint",
 				slog.String("endpointLBAlgorithm", endpoint.LoadBalancingAlgorithm),
 				slog.String("poolLBAlgorithm", p.LoadBalancingAlgorithm))
 
+			// Clean up hash-based routing state when switching away from HB
+			if previousAlgorithm == config.LOAD_BALANCE_HB && p.LoadBalancingAlgorithm != config.LOAD_BALANCE_HB {
+				p.HashLookupTable = nil
+				p.HashRoutingProperties = nil
+			}
 		} else {
 			p.logger.Error("invalid-endpoint-load-balancing-algorithm-provided-keeping-pool-lb-algo",
 				slog.String("endpointLBAlgorithm", endpoint.LoadBalancingAlgorithm),

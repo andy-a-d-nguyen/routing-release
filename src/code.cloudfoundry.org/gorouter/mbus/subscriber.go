@@ -46,7 +46,7 @@ type RegistryMessageOpts struct {
 	HashBalance            float64 `json:"hash_balance,string"`
 }
 
-func (rm *RegistryMessage) makeEndpoint(http2Enabled bool) (*route.Endpoint, error) {
+func (rm *RegistryMessage) makeEndpoint(http2Enabled bool, globalRoutingAlgo string) (*route.Endpoint, error) {
 	port, useTLS, err := rm.port()
 	if err != nil {
 		return nil, err
@@ -59,6 +59,11 @@ func (rm *RegistryMessage) makeEndpoint(http2Enabled bool) (*route.Endpoint, err
 	protocol := rm.Protocol
 	if protocol == "" || (!http2Enabled && protocol == "http2") {
 		protocol = "http1"
+	}
+
+	lbAlgo := globalRoutingAlgo
+	if rm.Options.LoadBalancingAlgorithm != "" {
+		lbAlgo = rm.Options.LoadBalancingAlgorithm
 	}
 
 	return route.NewEndpoint(&route.EndpointOpts{
@@ -77,7 +82,7 @@ func (rm *RegistryMessage) makeEndpoint(http2Enabled bool) (*route.Endpoint, err
 		IsolationSegment:        rm.IsolationSegment,
 		UseTLS:                  useTLS,
 		UpdatedAt:               updatedAt,
-		LoadBalancingAlgorithm:  rm.Options.LoadBalancingAlgorithm,
+		LoadBalancingAlgorithm:  lbAlgo,
 		HashHeaderName:          rm.Options.HashHeaderName,
 		HashBalanceFactor:       rm.Options.HashBalance,
 	}), nil
@@ -107,7 +112,8 @@ type Subscriber struct {
 
 	params startMessageParams
 
-	logger *slog.Logger
+	logger            *slog.Logger
+	globalRoutingAlgo string
 }
 
 type startMessageParams struct {
@@ -137,10 +143,11 @@ func NewSubscriber(
 			minimumRegisterIntervalInSeconds: int(c.StartResponseDelayInterval.Seconds()),
 			pruneThresholdInSeconds:          int(c.DropletStaleThreshold.Seconds()),
 		},
-		reconnected:      reconnected,
-		natsPendingLimit: c.NatsClientMessageBufferSize,
-		logger:           l,
-		http2Enabled:     c.EnableHTTP2,
+		reconnected:       reconnected,
+		natsPendingLimit:  c.NatsClientMessageBufferSize,
+		logger:            l,
+		http2Enabled:      c.EnableHTTP2,
+		globalRoutingAlgo: c.LoadBalance,
 	}
 }
 
@@ -243,7 +250,7 @@ func (s *Subscriber) subscribeRoutes() (*nats.Subscription, error) {
 }
 
 func (s *Subscriber) registerEndpoint(msg *RegistryMessage) {
-	endpoint, err := msg.makeEndpoint(s.http2Enabled)
+	endpoint, err := msg.makeEndpoint(s.http2Enabled, s.globalRoutingAlgo)
 	if err != nil {
 		s.logger.Error("Unable to register route",
 			log.ErrAttr(err),
@@ -258,7 +265,7 @@ func (s *Subscriber) registerEndpoint(msg *RegistryMessage) {
 }
 
 func (s *Subscriber) unregisterEndpoint(msg *RegistryMessage) {
-	endpoint, err := msg.makeEndpoint(s.http2Enabled)
+	endpoint, err := msg.makeEndpoint(s.http2Enabled, s.globalRoutingAlgo)
 	if err != nil {
 		s.logger.Error("Unable to unregister route",
 			log.ErrAttr(err),
