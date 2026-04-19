@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -25,10 +26,6 @@ import (
 	"github.com/honeycombio/libhoney-go/transmission"
 	statsd "gopkg.in/alexcesaro/statsd.v2"
 )
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
 
 const (
 	defaultSampleRate     = 1
@@ -638,6 +635,27 @@ func (f *fieldHolder) AddField(key string, val interface{}) {
 	f.data[key] = val
 }
 
+// AddFields adds all key/value pairs from the map to the field holder in a
+// single lock acquisition, avoiding per-field lock overhead. When the combined
+// size may exceed the existing map's capacity, a new map is allocated to avoid
+// incremental rehashing during growth.
+func (f *fieldHolder) AddFields(data map[string]interface{}) {
+	f.lock.Lock()
+	defer f.lock.Unlock()
+	if f.data == nil {
+		f.data = maps.Clone(data)
+		return
+	}
+	if len(data) > len(f.data) {
+		merged := make(marshallableMap, len(f.data)+len(data))
+		maps.Copy(merged, f.data)
+		maps.Copy(merged, data)
+		f.data = merged
+	} else {
+		maps.Copy(f.data, data)
+	}
+}
+
 // Add adds a complex data type to the event or builder on which it's called.
 // For structs, it adds each exported field. For maps, it adds each key/value.
 // Add will error on all other types.
@@ -765,6 +783,20 @@ func (e *Event) AddField(key string, val interface{}) {
 		return
 	}
 	e.fieldHolder.AddField(key, val)
+}
+
+// AddFields adds all key/value pairs from the map to the event in a single
+// lock acquisition. More efficient than calling AddField in a loop.
+//
+// Adds to an event that happen after it has been sent will return without
+// having any effect.
+func (e *Event) AddFields(data map[string]interface{}) {
+	e.sendLock.Lock()
+	defer e.sendLock.Unlock()
+	if e.sent {
+		return
+	}
+	e.fieldHolder.AddFields(data)
 }
 
 // Add adds a complex data type to the event on which it's called.
