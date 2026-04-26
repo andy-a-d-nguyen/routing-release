@@ -6,12 +6,12 @@ replace github.com/cactus/go-statsd-client => github.com/cactus/go-statsd-client
 
 require (
 	code.cloudfoundry.org/cfhttp/v2 v2.74.0
-	code.cloudfoundry.org/clock v1.66.0
-	code.cloudfoundry.org/debugserver v0.92.0
-	code.cloudfoundry.org/diego-logging-client v0.101.0
+	code.cloudfoundry.org/clock v1.67.0
+	code.cloudfoundry.org/debugserver v0.93.0
+	code.cloudfoundry.org/diego-logging-client v0.102.0
 	code.cloudfoundry.org/eventhub v0.69.0
 	code.cloudfoundry.org/go-loggregator/v9 v9.2.1
-	code.cloudfoundry.org/go-metric-registry v0.0.0-20260409052016-6e68d03a192f
+	code.cloudfoundry.org/go-metric-registry v0.0.0-20260420191148-b8aab4ed21a9
 	code.cloudfoundry.org/lager/v3 v3.66.0
 	code.cloudfoundry.org/localip v0.68.0
 	code.cloudfoundry.org/locket v0.0.0-20251117222557-be612341b29d
@@ -25,9 +25,7 @@ require (
 	github.com/cloudfoundry/sonde-go v0.0.0-20251217143644-d1670a435f2a
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/golang-jwt/jwt/v4 v4.5.2
-	github.com/jinzhu/gorm v1.9.16
 	github.com/kisielk/errcheck v1.10.0
-	github.com/lib/pq v1.12.3
 	github.com/nats-io/nats-server/v2 v2.12.7
 	github.com/nats-io/nats.go v1.51.0
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
@@ -40,7 +38,7 @@ require (
 	github.com/urfave/cli v1.22.17
 	github.com/urfave/negroni/v3 v3.1.1
 	github.com/vito/go-sse v1.1.3
-	go.step.sm/crypto v0.77.2
+	go.step.sm/crypto v0.77.7
 	go.uber.org/zap v1.27.1
 	go.uber.org/zap/exp v0.3.0
 	golang.org/x/crypto v0.50.0
@@ -50,6 +48,9 @@ require (
 	google.golang.org/grpc v1.80.0
 	google.golang.org/protobuf v1.36.11
 	gopkg.in/yaml.v3 v3.0.1
+	gorm.io/driver/mysql v1.6.0
+	gorm.io/driver/postgres v1.6.0
+	gorm.io/gorm v1.31.1
 )
 
 require (
@@ -80,6 +81,7 @@ require (
 	github.com/jackc/pgx/v5 v5.9.2 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/klauspost/compress v1.18.5 // indirect
 	github.com/minio/highwayhash v1.0.4 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
@@ -103,6 +105,6 @@ require (
 	golang.org/x/sys v0.43.0 // indirect
 	golang.org/x/text v0.36.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260414002931-afd174a4e478 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260420184626-e10c466a9529 // indirect
 	gopkg.in/alexcesaro/statsd.v2 v2.0.0 // indirect
 )
