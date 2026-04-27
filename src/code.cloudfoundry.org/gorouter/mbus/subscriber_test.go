@@ -38,9 +38,9 @@ var _ = Describe("Subscriber", func() {
 	)
 
 	BeforeEach(func() {
-		natsPort = test_util.NextAvailPort()
-
+		natsPort = test_util.ReservePort()
 		natsRunner = test_util.NewNATSRunner(int(natsPort))
+		test_util.ReleasePort(natsPort)
 		natsRunner.Start()
 		natsClient = natsRunner.MessageBus
 
@@ -60,13 +60,13 @@ var _ = Describe("Subscriber", func() {
 	})
 
 	AfterEach(func() {
-		if natsRunner != nil {
-			natsRunner.Stop()
-		}
 		if process != nil {
 			process.Signal(os.Interrupt)
 		}
 		process = nil
+		if natsRunner != nil {
+			natsRunner.Stop()
+		}
 	})
 
 	It("exits when signaled", func() {

@@ -85,8 +85,9 @@ var _ = Describe("Router", func() {
 		statusPort = test_util.NextAvailPort()
 		statusTLSPort = test_util.NextAvailPort()
 		statusRoutesPort = test_util.NextAvailPort()
-		natsPort = test_util.NextAvailPort()
-		config = test_util.SpecConfig(statusPort, statusTLSPort, statusRoutesPort, proxyPort, natsPort)
+		natsPort = test_util.ReservePort()
+		routeServiceServerPort := test_util.NextAvailPort()
+		config = test_util.SpecConfig(statusPort, statusTLSPort, statusRoutesPort, proxyPort, routeServiceServerPort, natsPort)
 		backendIdleTimeout = config.EndpointTimeout
 		requestTimeout = config.EndpointTimeout
 		config.EnableSSL = true
@@ -102,6 +103,7 @@ var _ = Describe("Router", func() {
 		}
 
 		natsRunner = test_util.NewNATSRunner(int(natsPort))
+		test_util.ReleasePort(natsPort)
 		natsRunner.Start()
 
 		routeServicesServer = &sharedfakes.RouteServicesServer{}
@@ -163,8 +165,9 @@ var _ = Describe("Router", func() {
 				statusPort = test_util.NextAvailPort()
 				statusTLSPort = test_util.NextAvailPort()
 				statusRoutesPort = test_util.NextAvailPort()
+				routeServiceServerPort := test_util.NextAvailPort()
 
-				c := test_util.SpecConfig(statusPort, statusTLSPort, statusRoutesPort, proxyPort, natsPort)
+				c := test_util.SpecConfig(statusPort, statusTLSPort, statusRoutesPort, proxyPort, routeServiceServerPort, natsPort)
 				c.StartResponseDelayInterval = 1 * time.Second
 
 				rtr, err := initializeRouter(c, c.EndpointTimeout, c.EndpointTimeout, registry, varz, mbusClient, logger.Logger, rss)
@@ -185,8 +188,9 @@ var _ = Describe("Router", func() {
 				statusPort = test_util.NextAvailPort()
 				statusTLSPort = test_util.NextAvailPort()
 				statusRoutesPort = test_util.NextAvailPort()
+				routeServiceServerPort := test_util.NextAvailPort()
 
-				c := test_util.SpecConfig(statusPort, statusTLSPort, statusRoutesPort, proxyPort, natsPort)
+				c := test_util.SpecConfig(statusPort, statusTLSPort, statusRoutesPort, proxyPort, routeServiceServerPort, natsPort)
 				c.StartResponseDelayInterval = 1 * time.Second
 
 				rss := &sharedfakes.RouteServicesServer{}
@@ -219,7 +223,8 @@ var _ = Describe("Router", func() {
 			statusPort = test_util.NextAvailPort()
 			statusTLSPort = test_util.NextAvailPort()
 			statusRoutesPort = test_util.NextAvailPort()
-			c = test_util.SpecConfig(statusPort, statusTLSPort, statusRoutesPort, proxyPort, natsPort)
+			routeServiceServerPort := test_util.NextAvailPort()
+			c = test_util.SpecConfig(statusPort, statusTLSPort, statusRoutesPort, proxyPort, routeServiceServerPort, natsPort)
 			c.StartResponseDelayInterval = 1 * time.Second
 		})
 
@@ -2312,7 +2317,7 @@ var _ = Describe("Router", func() {
 
 	})
 
-	Describe("frontend timeouts", func() {
+	Context("frontend timeouts", func() {
 		Context("when the frontend connection idles for more than the configured IdleTimeout", func() {
 			BeforeEach(func() {
 				config.FrontendIdleTimeout = 500 * time.Millisecond
