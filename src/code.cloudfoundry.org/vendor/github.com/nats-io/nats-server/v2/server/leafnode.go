@@ -119,17 +119,17 @@ type leafNodeCfg struct {
 
 // Check to see if this is a solicited leafnode. We do special processing for solicited.
 func (c *client) isSolicitedLeafNode() bool {
-	return c.kind == LEAF && c.leaf.remote != nil
+	return c.kind == LEAF && c.leaf != nil && c.leaf.remote != nil
 }
 
 // Returns true if this is a solicited leafnode and is not configured to be treated as a hub or a receiving
 // connection leafnode where the otherside has declared itself to be the hub.
 func (c *client) isSpokeLeafNode() bool {
-	return c.kind == LEAF && c.leaf.isSpoke
+	return c.kind == LEAF && c.leaf != nil && c.leaf.isSpoke
 }
 
 func (c *client) isHubLeafNode() bool {
-	return c.kind == LEAF && !c.leaf.isSpoke
+	return c.kind == LEAF && c.leaf != nil && !c.leaf.isSpoke
 }
 
 func (c *client) isIsolatedLeafNode() bool {
@@ -137,7 +137,7 @@ func (c *client) isIsolatedLeafNode() bool {
 	// group name here, which the hub and/or leaf could provide, so that we
 	// can isolate away certain LNs but not others on an opt-in basis. For
 	// now we will just isolate all LN interest until then.
-	return c.kind == LEAF && c.leaf.isolated
+	return c.kind == LEAF && c.leaf != nil && c.leaf.isolated
 }
 
 // This will spin up go routines to solicit the remote leaf node connections.
@@ -1627,6 +1627,12 @@ func (c *client) processLeafnodeInfo(info *Info) {
 
 	// Check if we have the remote account information and if so make sure it's stored.
 	if info.RemoteAccount != _EMPTY_ {
+		if c.acc == nil {
+			c.mu.Unlock()
+			c.sendErr("Authorization Violation")
+			c.closeConnection(ProtocolViolation)
+			return
+		}
 		s.leafRemoteAccounts.Store(c.acc.Name, info.RemoteAccount)
 	}
 	c.mu.Unlock()
@@ -3550,6 +3556,12 @@ func (s *Server) leafNodeFinishConnectProcess(c *client) {
 		return
 	}
 	remote := c.leaf.remote
+	if remote == nil || c.acc == nil {
+		c.mu.Unlock()
+		c.sendErr("Authorization Violation")
+		c.closeConnection(ProtocolViolation)
+		return
+	}
 	// Check if we will need to send the system connect event.
 	remote.RLock()
 	sendSysConnectEvent := remote.Hub
@@ -3579,6 +3591,7 @@ func (s *Server) leafNodeFinishConnectProcess(c *client) {
 	if sendSysConnectEvent {
 		s.sendLeafNodeConnect(acc)
 	}
+	s.accountConnectEvent(c)
 
 	// The above functions are not atomically under the client
 	// lock doing those operations. It is possible - since we

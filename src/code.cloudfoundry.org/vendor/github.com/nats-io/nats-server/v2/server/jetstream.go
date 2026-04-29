@@ -1611,13 +1611,13 @@ func (a *Account) EnableJetStream(limits map[string]JetStreamAccountLimits, tq c
 			}
 			// We've observed a partial batch write. Write the remainder of the batch.
 			batchSeq++
-			_, batchStoreDir = getBatchStoreDir(mset, batchId)
+			_, batchStoreDir = getBatchStoreDir(jsa.storeDir, cfg.Name, batchId)
 			if _, err = os.Stat(batchStoreDir); err != nil {
 				s.Errorf("  Failed restoring partial batch write for stream '%s > %s' at sequence %d: %v",
 					mset.accName(), mset.name(), batchSeq, err)
 				goto SKIP
 			}
-			store, err = newBatchStore(mset, batchId)
+			store, err = newBatchStore(mset, batchId, cfg.Replicas, cfg.Storage, jsa.storeDir, cfg.Name)
 			if err != nil {
 				s.Errorf("  Failed restoring partial batch write for stream '%s > %s' at sequence %d: %v",
 					mset.accName(), mset.name(), batchSeq, err)
@@ -3118,6 +3118,13 @@ func isValidName(name string) bool {
 // This can be used when naming streams or consumers with multi-token subjects.
 func canonicalName(name string) string {
 	return strings.ReplaceAll(name, ".", "_")
+}
+
+func isValidAssetName(name string) bool {
+	if name == _EMPTY_ {
+		return false
+	}
+	return !strings.ContainsAny(name, " \t\r\n\f.*>\\/")
 }
 
 // To throttle the out of resources errors.

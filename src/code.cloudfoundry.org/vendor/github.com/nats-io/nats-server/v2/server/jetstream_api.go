@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -2109,7 +2110,7 @@ func (s *Server) jsStreamInfoRequest(sub *subscription, c *client, a *Account, s
 	if cc != nil {
 		// Check to make sure the stream is assigned.
 		js.mu.RLock()
-		isLeader, sa := cc.isLeader(), js.streamAssignment(acc.Name, streamName)
+		isLeader, sa := cc.isLeader(), js.streamAssignmentOrInflight(acc.Name, streamName)
 		var offline bool
 		if sa != nil {
 			clusterWideConsCount = len(sa.consumers)
@@ -2338,7 +2339,7 @@ func (s *Server) jsStreamLeaderStepDownRequest(sub *subscription, c *client, _ *
 	}
 
 	js.mu.RLock()
-	isLeader, sa := cc.isLeader(), js.streamAssignment(acc.Name, name)
+	isLeader, sa := cc.isLeader(), js.streamAssignmentOrInflight(acc.Name, name)
 	js.mu.RUnlock()
 
 	if isLeader && sa == nil {
@@ -2455,7 +2456,7 @@ func (s *Server) jsConsumerLeaderStepDownRequest(sub *subscription, c *client, _
 	consumer := tokenAt(subject, 7)
 
 	js.mu.RLock()
-	isLeader, sa := cc.isLeader(), js.streamAssignment(acc.Name, stream)
+	isLeader, sa := cc.isLeader(), js.streamAssignmentOrInflight(acc.Name, stream)
 	js.mu.RUnlock()
 
 	if isLeader && sa == nil {
@@ -3456,7 +3457,7 @@ func (s *Server) jsMsgDeleteRequest(sub *subscription, c *client, _ *Account, su
 		}
 
 		js.mu.RLock()
-		isLeader, sa := cc.isLeader(), js.streamAssignment(acc.Name, stream)
+		isLeader, sa := cc.isLeader(), js.streamAssignmentOrInflight(acc.Name, stream)
 		js.mu.RUnlock()
 
 		if isLeader && sa == nil {
@@ -3581,7 +3582,7 @@ func (s *Server) jsMsgGetRequest(sub *subscription, c *client, _ *Account, subje
 		}
 
 		js.mu.RLock()
-		isLeader, sa := cc.isLeader(), js.streamAssignment(acc.Name, stream)
+		isLeader, sa := cc.isLeader(), js.streamAssignmentOrInflight(acc.Name, stream)
 		js.mu.RUnlock()
 
 		if isLeader && sa == nil {
@@ -3876,7 +3877,7 @@ func (s *Server) jsStreamPurgeRequest(sub *subscription, c *client, _ *Account, 
 		}
 
 		js.mu.RLock()
-		isLeader, sa := cc.isLeader(), js.streamAssignment(acc.Name, stream)
+		isLeader, sa := cc.isLeader(), js.streamAssignmentOrInflight(acc.Name, stream)
 		js.mu.RUnlock()
 
 		if isLeader && sa == nil {
@@ -4044,6 +4045,13 @@ func (s *Server) jsStreamRestoreRequest(sub *subscription, c *client, _ *Account
 	}
 	if stream != req.Config.Name {
 		resp.Error = NewJSStreamMismatchError()
+		s.sendAPIErrResponse(ci, acc, subject, reply, string(msg), s.jsonResponse(&resp))
+		return
+	}
+
+	// Check for path like separators in the name.
+	if strings.ContainsAny(stream, `\/`) {
+		resp.Error = NewJSStreamNameContainsPathSeparatorsError()
 		s.sendAPIErrResponse(ci, acc, subject, reply, string(msg), s.jsonResponse(&resp))
 		return
 	}
@@ -5079,7 +5087,7 @@ func (s *Server) jsConsumerInfoRequest(sub *subscription, c *client, _ *Account,
 		groupCreated := meta.Created()
 
 		js.mu.RLock()
-		isLeader, sa, ca := cc.isLeader(), js.streamAssignment(acc.Name, streamName), js.consumerAssignment(acc.Name, streamName, consumerName)
+		isLeader, sa, ca := cc.isLeader(), js.streamAssignmentOrInflight(acc.Name, streamName), js.consumerAssignmentOrInflight(acc.Name, streamName, consumerName)
 		var rg *raftGroup
 		var offline, isMember bool
 		if ca != nil {
@@ -5405,7 +5413,10 @@ func (s *Server) jsConsumerPauseRequest(sub *subscription, c *client, _ *Account
 		}
 
 		nca := *ca
+		// We're only holding the read lock and release below,
+		// we need a copy to prevent concurrent reads/writes.
 		ncfg := *ca.Config
+		ncfg.Metadata = maps.Clone(ncfg.Metadata)
 		nca.Config = &ncfg
 		meta := cc.meta
 		js.mu.RUnlock()
@@ -5453,7 +5464,13 @@ func (s *Server) jsConsumerPauseRequest(sub *subscription, c *client, _ *Account
 		return
 	}
 
+	// We're only holding the read lock and release below,
+	// we need a copy to prevent concurrent reads/writes.
+	obs.mu.RLock()
 	ncfg := obs.cfg
+	ncfg.Metadata = maps.Clone(ncfg.Metadata)
+	obs.mu.RUnlock()
+
 	pauseUTC := req.PauseUntil.UTC()
 	if !pauseUTC.IsZero() {
 		ncfg.PauseUntil = &pauseUTC
