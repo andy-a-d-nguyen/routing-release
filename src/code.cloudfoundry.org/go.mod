@@ -26,7 +26,7 @@ require (
 	github.com/go-sql-driver/mysql v1.10.0
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/kisielk/errcheck v1.10.0
-	github.com/nats-io/nats-server/v2 v2.12.8
+	github.com/nats-io/nats-server/v2 v2.14.0
 	github.com/nats-io/nats.go v1.51.0
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
 	github.com/onsi/ginkgo/v2 v2.28.3
@@ -59,7 +59,7 @@ require (
 	code.cloudfoundry.org/go-diodes v0.0.0-20260427153419-57aa1b10ab4c // indirect
 	code.cloudfoundry.org/inigo v0.0.0-20210615140442-4bdc4f6e44d5 // indirect
 	filippo.io/edwards25519 v1.2.0 // indirect
-	github.com/Masterminds/semver/v3 v3.4.0 // indirect
+	github.com/Masterminds/semver/v3 v3.5.0 // indirect
 	github.com/antithesishq/antithesis-sdk-go v0.7.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bmizerany/pat v0.0.0-20210406213842-e4b6760bdd6f // indirect
@@ -82,7 +82,7 @@ require (
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
-	github.com/klauspost/compress v1.18.5 // indirect
+	github.com/klauspost/compress v1.18.6 // indirect
 	github.com/minio/highwayhash v1.0.4 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/nats-io/jwt/v2 v2.8.1 // indirect
