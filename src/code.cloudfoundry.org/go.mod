@@ -1,21 +1,21 @@
 module code.cloudfoundry.org
 
-go 1.25.0
+go 1.25.1
 
 replace github.com/cactus/go-statsd-client => github.com/cactus/go-statsd-client v2.0.2-0.20150911070441-6fa055a7b594+incompatible
 
 require (
-	code.cloudfoundry.org/cfhttp/v2 v2.76.0
-	code.cloudfoundry.org/clock v1.69.0
-	code.cloudfoundry.org/debugserver v0.95.0
-	code.cloudfoundry.org/diego-logging-client v0.104.0
-	code.cloudfoundry.org/eventhub v0.71.0
+	code.cloudfoundry.org/cfhttp/v2 v2.77.0
+	code.cloudfoundry.org/clock v1.70.0
+	code.cloudfoundry.org/debugserver v0.96.0
+	code.cloudfoundry.org/diego-logging-client v0.105.0
+	code.cloudfoundry.org/eventhub v0.72.0
 	code.cloudfoundry.org/go-loggregator/v9 v9.2.1
-	code.cloudfoundry.org/go-metric-registry v0.0.0-20260505071949-70469c50517d
-	code.cloudfoundry.org/lager/v3 v3.68.0
-	code.cloudfoundry.org/localip v0.70.0
+	code.cloudfoundry.org/go-metric-registry v0.0.0-20260512050631-754dd3cf936e
+	code.cloudfoundry.org/lager/v3 v3.69.0
+	code.cloudfoundry.org/localip v0.71.0
 	code.cloudfoundry.org/locket v0.0.0-20260507165111-20f6e690be22
-	code.cloudfoundry.org/tlsconfig v0.53.0
+	code.cloudfoundry.org/tlsconfig v0.54.0
 	github.com/armon/go-proxyproto v0.1.0
 	github.com/cactus/go-statsd-client v3.2.1+incompatible
 	github.com/cloudfoundry-community/go-uaa v0.3.6
@@ -25,7 +25,7 @@ require (
 	github.com/cloudfoundry/sonde-go v0.0.0-20251217143644-d1670a435f2a
 	github.com/go-sql-driver/mysql v1.10.0
 	github.com/golang-jwt/jwt/v4 v4.5.2
-	github.com/kisielk/errcheck v1.10.0
+	github.com/kisielk/errcheck v1.20.0
 	github.com/nats-io/nats-server/v2 v2.14.0
 	github.com/nats-io/nats.go v1.52.0
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
@@ -38,14 +38,14 @@ require (
 	github.com/urfave/cli v1.22.17
 	github.com/urfave/negroni/v3 v3.1.1
 	github.com/vito/go-sse v1.1.3
-	go.step.sm/crypto v0.78.0
+	go.step.sm/crypto v0.81.0
 	go.uber.org/zap v1.28.0
 	go.uber.org/zap/exp v0.3.0
 	golang.org/x/crypto v0.51.0
 	golang.org/x/net v0.54.0
 	golang.org/x/oauth2 v0.36.0
 	golang.org/x/tools v0.45.0
-	google.golang.org/grpc v1.81.0
+	google.golang.org/grpc v1.81.1
 	google.golang.org/protobuf v1.36.11
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.6.0
@@ -55,7 +55,7 @@ require (
 
 require (
 	code.cloudfoundry.org/bbs v0.0.0-20260507155651-045cbe358842 // indirect
-	code.cloudfoundry.org/durationjson v0.71.0 // indirect
+	code.cloudfoundry.org/durationjson v0.72.0 // indirect
 	code.cloudfoundry.org/go-diodes v0.0.0-20260504113438-abdf05667e78 // indirect
 	code.cloudfoundry.org/inigo v0.0.0-20210615140442-4bdc4f6e44d5 // indirect
 	filippo.io/edwards25519 v1.2.0 // indirect
@@ -105,6 +105,6 @@ require (
 	golang.org/x/sys v0.44.0 // indirect
 	golang.org/x/text v0.37.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260504160031-60b97b32f348 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260511170946-3700d4141b60 // indirect
 	gopkg.in/alexcesaro/statsd.v2 v2.0.0 // indirect
 )
