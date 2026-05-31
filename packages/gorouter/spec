@@ -213,7 +213,6 @@ files:
   - code.cloudfoundry.org/vendor/go.uber.org/zap/internal/pool/*.go # gosub
   - code.cloudfoundry.org/vendor/go.uber.org/zap/internal/stacktrace/*.go # gosub
   - code.cloudfoundry.org/vendor/go.uber.org/zap/zapcore/*.go # gosub
-  - code.cloudfoundry.org/vendor/go.yaml.in/yaml/v2/*.go # gosub
   - code.cloudfoundry.org/vendor/go.yaml.in/yaml/v3/*.go # gosub
   - code.cloudfoundry.org/vendor/golang.org/x/crypto/blake2b/*.go # gosub
   - code.cloudfoundry.org/vendor/golang.org/x/crypto/blake2b/*.s # gosub
