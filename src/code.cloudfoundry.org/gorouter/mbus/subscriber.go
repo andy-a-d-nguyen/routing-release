@@ -43,10 +43,33 @@ type RegistryMessage struct {
 type RegistryMessageOpts struct {
 	LoadBalancingAlgorithm string  `json:"loadbalancing"`
 	HashHeaderName         string  `json:"hash_header"`
-	HashBalance            float64 `json:"hash_balance,string"`
+	HashBalance            float64 `json:"hash_balance"`
+	// RFC route policy options (from Cloud Controller via Diego sync)
+	RoutePolicyScope   string `json:"route_policy_scope,omitempty"`
+	RoutePolicySources string `json:"route_policy_sources,omitempty"`
 }
 
-func (rm *RegistryMessage) makeEndpoint(http2Enabled bool, globalRoutingAlgo string) (*route.Endpoint, error) {
+// parseCommaSeparatedSources splits a comma-separated string into a slice of sources.
+// Returns nil if the input is empty.
+func parseCommaSeparatedSources(s string) []string {
+	if s == "" {
+		return nil
+	}
+	parts := strings.Split(s, ",")
+	result := make([]string, 0, len(parts))
+	for _, p := range parts {
+		trimmed := strings.TrimSpace(p)
+		if trimmed != "" {
+			result = append(result, trimmed)
+		}
+	}
+	if len(result) == 0 {
+		return nil
+	}
+	return result
+}
+
+func (rm *RegistryMessage) MakeEndpoint(http2Enabled bool, globalRoutingAlgo string) (*route.Endpoint, error) {
 	port, useTLS, err := rm.port()
 	if err != nil {
 		return nil, err
@@ -85,6 +108,8 @@ func (rm *RegistryMessage) makeEndpoint(http2Enabled bool, globalRoutingAlgo str
 		LoadBalancingAlgorithm:  lbAlgo,
 		HashHeaderName:          rm.Options.HashHeaderName,
 		HashBalanceFactor:       rm.Options.HashBalance,
+		RoutePolicyScope:        rm.Options.RoutePolicyScope,
+		RoutePolicies:           parseCommaSeparatedSources(rm.Options.RoutePolicySources),
 	}), nil
 }
 
@@ -250,7 +275,7 @@ func (s *Subscriber) subscribeRoutes() (*nats.Subscription, error) {
 }
 
 func (s *Subscriber) registerEndpoint(msg *RegistryMessage) {
-	endpoint, err := msg.makeEndpoint(s.http2Enabled, s.globalRoutingAlgo)
+	endpoint, err := msg.MakeEndpoint(s.http2Enabled, s.globalRoutingAlgo)
 	if err != nil {
 		s.logger.Error("Unable to register route",
 			log.ErrAttr(err),
@@ -265,7 +290,7 @@ func (s *Subscriber) registerEndpoint(msg *RegistryMessage) {
 }
 
 func (s *Subscriber) unregisterEndpoint(msg *RegistryMessage) {
-	endpoint, err := msg.makeEndpoint(s.http2Enabled, s.globalRoutingAlgo)
+	endpoint, err := msg.MakeEndpoint(s.http2Enabled, s.globalRoutingAlgo)
 	if err != nil {
 		s.logger.Error("Unable to unregister route",
 			log.ErrAttr(err),

@@ -127,6 +127,17 @@ type AccessLogRecord struct {
 	GorouterTime                float64
 
 	LocalAddress string
+
+	// Identity-aware routing authorization fields.
+	// CallerCFApp/Space/Org are the CF identity fields from the client certificate.
+	CallerCFApp   string
+	CallerCFSpace string
+	CallerCFOrg   string
+	// RoutePolicy identifies the route policy rule that matched or caused denial.
+	// Empty ("-") when no route policies are configured or enforcement is disabled.
+	RoutePolicy string
+	// TlsSNI is the SNI used during TLS (logged on 421 rejections).
+	TlsSNI string
 }
 
 func (r *AccessLogRecord) formatStartedAt() string {
@@ -290,6 +301,15 @@ func (r *AccessLogRecord) makeRecord(performTruncate bool) []byte {
 		case "backend_time":
 			b.WriteString(`backend_time:`)
 			b.WriteDashOrFloatValue(r.successfulAttemptTime())
+		case "caller_cf_app":
+			b.WriteString(`caller_cf_app:`)
+			b.WriteDashOrStringValue(r.CallerCFApp)
+		case "caller_cf_org":
+			b.WriteString(`caller_cf_org:`)
+			b.WriteDashOrStringValue(r.CallerCFOrg)
+		case "caller_cf_space":
+			b.WriteString(`caller_cf_space:`)
+			b.WriteDashOrStringValue(r.CallerCFSpace)
 		case "dial_time":
 			b.WriteString(`dial_time:`)
 			b.WriteDashOrFloatValue(r.dialTime())
@@ -305,6 +325,12 @@ func (r *AccessLogRecord) makeRecord(performTruncate bool) []byte {
 		case "local_address":
 			b.WriteString(`local_address:`)
 			b.WriteDashOrStringValue(r.LocalAddress)
+		case "route_policy":
+			b.WriteString(`route_policy:`)
+			b.WriteDashOrStringValue(r.RoutePolicy)
+		case "tls_sni":
+			b.WriteString(`tls_sni:`)
+			b.WriteDashOrStringValue(r.TlsSNI)
 		case "tls_time":
 			b.WriteString(`tls_time:`)
 			b.WriteDashOrFloatValue(r.tlsTime())

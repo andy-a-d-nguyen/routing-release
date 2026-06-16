@@ -63,6 +63,14 @@ type Stats struct {
 	NumberConnections *Counter
 }
 
+// RoutePolicyScopeAny, RoutePolicyScopeOrg, RoutePolicyScopeSpace are the valid values for RoutePolicyScope.
+// They correspond to the route_policies_scope field in Cloud Controller.
+const (
+	RoutePolicyScopeAny   = "any"
+	RoutePolicyScopeOrg   = "org"
+	RoutePolicyScopeSpace = "space"
+)
+
 func NewStats() *Stats {
 	return &Stats{
 		NumberConnections: &Counter{},
@@ -118,6 +126,12 @@ type Endpoint struct {
 	LoadBalancingAlgorithm string
 	HashHeaderName         string
 	HashBalanceFactor      float64
+	// RoutePolicyScope is the operator-level scope boundary: "any", "org", or "space".
+	// Non-empty means access control is enforced for this endpoint's route.
+	RoutePolicyScope string
+	// RoutePolicies is the list of parsed sources (e.g. "cf:app:<guid>", "cf:space:<guid>",
+	// "cf:org:<guid>", "cf:any"). Empty with a non-empty RoutePolicyScope means default-deny.
+	RoutePolicies []string
 }
 
 func (e *Endpoint) RoundTripper() ProxyRoundTripper {
@@ -163,7 +177,9 @@ func (e *Endpoint) Equal(e2 *Endpoint) bool {
 		e.LoadBalancingAlgorithm == e2.LoadBalancingAlgorithm &&
 		e.HashHeaderName == e2.HashHeaderName &&
 		e.HashBalanceFactor == e2.HashBalanceFactor &&
-		maps.Equal(e.Tags, e2.Tags)
+		maps.Equal(e.Tags, e2.Tags) &&
+		e.RoutePolicyScope == e2.RoutePolicyScope &&
+		slices.Equal(e.RoutePolicies, e2.RoutePolicies)
 
 }
 
@@ -210,6 +226,13 @@ type EndpointPool struct {
 	LoadBalancingAlgorithm string
 	HashRoutingProperties  *HashRoutingProperties
 	HashLookupTable        MaglevLookup
+
+	// routePolicyScope is the operator-level scope boundary: "any", "org", or "space".
+	// Stored at pool level because all endpoints on the same route share the same policies.
+	routePolicyScope string
+	// routePolicies is the list of parsed sources (e.g. "cf:app:<guid>", "cf:space:<guid>",
+	// "cf:org:<guid>", "cf:any"). Empty with a non-empty routePolicyScope means default-deny.
+	routePolicies []string
 }
 
 type EndpointOpts struct {
@@ -231,6 +254,12 @@ type EndpointOpts struct {
 	LoadBalancingAlgorithm  string
 	HashHeaderName          string
 	HashBalanceFactor       float64
+	// RoutePolicyScope is the operator-level scope: "any", "org", or "space".
+	// Non-empty means enforcement is active for this route.
+	RoutePolicyScope string
+	// RoutePolicies are the parsed sources for this route.
+	// Empty + non-empty RoutePolicyScope means default-deny.
+	RoutePolicies []string
 }
 
 func NewEndpoint(opts *EndpointOpts) *Endpoint {
@@ -251,6 +280,8 @@ func NewEndpoint(opts *EndpointOpts) *Endpoint {
 		IsolationSegment:       opts.IsolationSegment,
 		UpdatedAt:              opts.UpdatedAt,
 		LoadBalancingAlgorithm: opts.LoadBalancingAlgorithm,
+		RoutePolicyScope:       opts.RoutePolicyScope,
+		RoutePolicies:          opts.RoutePolicies,
 	}
 
 	if opts.LoadBalancingAlgorithm == config.LOAD_BALANCE_HB && opts.HashHeaderName != "" { // BalanceFactor is optional
@@ -369,6 +400,11 @@ func (p *EndpointPool) Put(endpoint *Endpoint) PoolPutResult {
 
 		p.RouteSvcUrl = e.endpoint.RouteServiceUrl
 		p.setPoolLoadBalancingAlgorithm(e.endpoint)
+		// Route policy fields are pool-level: all backends of a route carry the
+		// same policies (enforced by CAPI at registration time), so last-writer-wins
+		// here is safe and keeps the pool in sync with the latest registration.
+		p.routePolicyScope = endpoint.RoutePolicyScope
+		p.routePolicies = endpoint.RoutePolicies
 		e.updated = time.Now()
 		if p.LoadBalancingAlgorithm == config.LOAD_BALANCE_HB {
 			p.HashLookupTable.Add(e.endpoint.PrivateInstanceId)
@@ -392,6 +428,11 @@ func (p *EndpointPool) Put(endpoint *Endpoint) PoolPutResult {
 
 		p.RouteSvcUrl = e.endpoint.RouteServiceUrl
 		p.setPoolLoadBalancingAlgorithm(e.endpoint)
+		// Route policy fields are pool-level: all backends of a route carry the
+		// same policies (enforced by CAPI at registration time), so last-writer-wins
+		// here is safe and keeps the pool in sync with the latest registration.
+		p.routePolicyScope = endpoint.RoutePolicyScope
+		p.routePolicies = endpoint.RoutePolicies
 		if p.LoadBalancingAlgorithm == config.LOAD_BALANCE_HB {
 			p.HashLookupTable.Add(e.endpoint.PrivateInstanceId)
 		}
@@ -579,6 +620,40 @@ func (p *EndpointPool) IsEmpty() bool {
 	return l == 0
 }
 
+// RoutePolicyScope returns the route policy scope for this pool.
+// All endpoints in a pool share the same route policy scope since they represent
+// instances of the same application route registered with the same options.
+// Returns empty string if enforcement is not active.
+func (p *EndpointPool) RoutePolicyScope() string {
+	p.Lock()
+	defer p.Unlock()
+
+	return p.routePolicyScope
+}
+
+// RoutePolicies returns the route policies for this pool.
+// All endpoints in a pool share the same route policies.
+// Returns nil if no policies are configured.
+func (p *EndpointPool) RoutePolicies() []string {
+	p.Lock()
+	defer p.Unlock()
+
+	return p.routePolicies
+}
+
+// ApplicationId returns the ApplicationId from the first endpoint in the pool.
+// All endpoints in a pool should have the same ApplicationId.
+func (p *EndpointPool) ApplicationId() string {
+	p.Lock()
+	defer p.Unlock()
+
+	if len(p.endpoints) == 0 {
+		return ""
+	}
+
+	return p.endpoints[0].endpoint.ApplicationId
+}
+
 func (p *EndpointPool) NextIndex() int {
 	if p.NextIdx == -1 {
 		p.NextIdx = p.random.Intn(len(p.endpoints))
@@ -740,6 +815,8 @@ func (e *Endpoint) MarshalJSON() ([]byte, error) {
 		LoadBalancingAlgorithm string            `json:"load_balancing_algorithm,omitempty"`
 		HashHeader             string            `json:"hash_header,omitempty"`
 		HashBalance            *float64          `json:"hash_balance,omitempty"` // omitempty on a float64 field will omit the field when the value is 0.0, to keep 0 use pointer of float64
+		RoutePolicyScope       string            `json:"route_policy_scope,omitempty"`
+		RoutePolicies          []string          `json:"route_policies,omitempty"`
 	}
 
 	jsonObj.Address = e.addr
@@ -754,6 +831,8 @@ func (e *Endpoint) MarshalJSON() ([]byte, error) {
 	jsonObj.ServerCertDomainSAN = e.ServerCertDomainSAN
 	jsonObj.LoadBalancingAlgorithm = e.LoadBalancingAlgorithm
 	jsonObj.HashHeader = e.HashHeaderName
+	jsonObj.RoutePolicyScope = e.RoutePolicyScope
+	jsonObj.RoutePolicies = e.RoutePolicies
 
 	// marshal balance factor only if load balancing algorithm is hash-based
 	if e.LoadBalancingAlgorithm == config.LOAD_BALANCE_HB {

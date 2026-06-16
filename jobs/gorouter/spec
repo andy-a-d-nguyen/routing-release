@@ -160,6 +160,8 @@ properties:
       none - Gorouter will not request client certificates in TLS handshakes, and will ignore them if presented. Incompatible with `forwarded_client_cert: forward` or `sanitize_set`.
       request - Gorouter will request client certificates in TLS handshakes, and will validate them when presented, but will not require them.
       require - Gorouter will fail a TLS handshake if the client does not provide a certificate signed by a CA it trusts. Select this option if your load balancer terminates TLS and does not require client certificates, and the load balancer provides a compatible client certificate of its own to Gorouter in an independent TLS handshake. This option may also be selected for Isolation Segments when Gorouter is the first point of TLS termination. Many clients of CF platform APIs do not present client certificates in TLS handshakes, so the first point of TLS termination for requests to the system domain must not require them. This option has no effect on the HTTP listener; to disable HTTP support set `disable_http: true`.
+
+      Note: This property applies to the default TLS listener. Domains configured in `router.domains` enforce their own mTLS requirement independently — client certificates are always required for those domains regardless of this setting.
     default: request
   router.disable_http:
     description: Disables the http listener on port specified by router.port. This cannot be set to true if enable_ssl is false.
@@ -200,6 +202,33 @@ properties:
   router.only_trust_client_ca_certs:
     description: "When router.only_trust_client_ca_certs is true, router.client_ca_certs are the only trusted CA certs for client requests. When router.only_trust_client_ca_certs is false, router.client_ca_certs are trusted in addition to router.ca_certs and the CA certificates installed on the filesystem. This will have no affect if the `router.client_cert_validation` property is set to none."
     default: false
+  router.domains:
+    description: |
+      Array of domains requiring mutual TLS authentication. Each domain can have its own CA certificate pool, forwarded_client_cert mode, and xfcc_format.
+      For non-wildcard domains, the domain must match the request host exactly.
+      For wildcard domains (e.g., *.apps.identity), the wildcard must be the leftmost label and matches any single label.
+
+      These domains enforce client certificate validation independently of `router.client_cert_validation` — clients connecting to these domains are always required to present a valid certificate signed by the domain's configured CA.
+
+      xfcc_format controls the format of the X-Forwarded-Client-Cert header:
+      - "raw" (default): Full base64-encoded certificate (~1.5KB)
+      - "envoy": Compact Hash=<sha256>;Subject="<DN>" format (~300 bytes)
+    default: []
+    example:
+    - name: "*.apps.identity"
+      ca_certs: |
+        -----BEGIN CERTIFICATE-----
+        <CA certificate for apps.identity domain>
+        -----END CERTIFICATE-----
+      forwarded_client_cert: sanitize_set
+      xfcc_format: envoy
+    - name: "secure.example.com"
+      ca_certs: |
+        -----BEGIN CERTIFICATE-----
+        <CA certificate for secure.example.com>
+        -----END CERTIFICATE-----
+      forwarded_client_cert: forward
+      xfcc_format: raw
   router.backends.max_attempts:
     description: |
       Maximum number of attempts on failing requests against backend routes.
@@ -339,7 +368,7 @@ properties:
       this property and operators have to explicitly enable them. This is done to prevent breaking
       log parsing in existing setups by the introduction of new fields. Does not affect stdout /
       stderr logs.
-      Available fields are: backend_time, dial_time, dns_time, failed_attempts, failed_attempts_time, local_address, tls_time
+      Available fields are: backend_time, caller_cf_app, caller_cf_org, caller_cf_space, dial_time, dns_time, failed_attempts, failed_attempts_time, local_address, route_policy, tls_sni, tls_time
     default: []
   router.enable_proxy:
     description: "Enables support for the popular PROXY protocol, allowing downstream load balancers that do not support HTTP to pass along client information."

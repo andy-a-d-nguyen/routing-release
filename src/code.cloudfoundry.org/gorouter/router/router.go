@@ -3,6 +3,7 @@ package router
 import (
 	"bytes"
 	"compress/zlib"
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
@@ -215,6 +216,12 @@ func (r *Router) Run(signals <-chan os.Signal, ready chan<- struct{}) error {
 		IdleTimeout:       r.config.FrontendIdleTimeout,
 		ReadHeaderTimeout: r.config.ReadHeaderTimeout,
 		MaxHeaderBytes:    MAX_HEADER_BYTES,
+		// ConnContext injects a mutable *TLSConnState per connection so that
+		// getTLSConfigForClient can populate it during the TLS handshake and
+		// the authorization handler can read it later.
+		ConnContext: func(ctx context.Context, c net.Conn) context.Context {
+			return handlers.SetTLSConnState(ctx, &handlers.TLSConnState{})
+		},
 	}
 
 	err = r.serveHTTP(server, r.errChan)
@@ -291,7 +298,8 @@ func (r *Router) serveHTTPS(server *http.Server, errChan chan error) error {
 		return nil
 	}
 
-	tlsConfig := &tls.Config{
+	// Base TLS config for non-mTLS domains
+	baseTlsConfig := &tls.Config{
 		Certificates: r.config.SSLCertificates,
 		CipherSuites: r.config.CipherSuites,
 		MinVersion:   r.config.MinTLSVersion,
@@ -301,18 +309,25 @@ func (r *Router) serveHTTPS(server *http.Server, errChan chan error) error {
 	}
 
 	if r.config.VerifyClientCertificatesBasedOnProvidedMetadata && r.config.VerifyClientCertificateMetadataRules != nil {
-		tlsConfig.VerifyPeerCertificate = r.verifyMtlsMetadata
+		baseTlsConfig.VerifyPeerCertificate = r.verifyMtlsMetadata
 	}
 
 	if r.config.EnableHTTP2 {
-		tlsConfig.NextProtos = []string{"h2", "http/1.1"}
+		baseTlsConfig.NextProtos = []string{"h2", "http/1.1"}
 	}
 
 	// Although this functionality is deprecated there is no intention to remove it from the stdlib
 	// due to the Go 1 compatibility promise. We rely on it to prefer more specific matches (a full
 	// SNI match over wildcard matches) instead of relying on the order of certificates.
 	//lint:ignore SA1019 - see ^^
-	tlsConfig.BuildNameToCertificate()
+	baseTlsConfig.BuildNameToCertificate()
+
+	// Wrap with GetConfigForClient for per-domain mTLS
+	tlsConfig := &tls.Config{
+		GetConfigForClient: func(hello *tls.ClientHelloInfo) (*tls.Config, error) {
+			return r.getTLSConfigForClient(hello, baseTlsConfig)
+		},
+	}
 
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", r.config.SSLPort))
 	if err != nil {
@@ -351,6 +366,37 @@ func (r *Router) verifyMtlsMetadata(_ [][]byte, chains [][]*x509.Certificate) er
 		return config.VerifyClientCertMetadata(r.config.VerifyClientCertificateMetadataRules, chains, r.logger)
 	}
 	return nil
+}
+
+// getTLSConfigForClient returns appropriate TLS config based on SNI (Server Name Indication)
+// For mTLS domains, it requires and verifies client certificates using domain-specific CA pool
+// For regular domains, it uses the base TLS configuration
+func (r *Router) getTLSConfigForClient(hello *tls.ClientHelloInfo, baseConfig *tls.Config) (*tls.Config, error) {
+	serverName := hello.ServerName
+
+	// Populate TLSConnState in the connection context (set by ConnContext above).
+	// The pointer was allocated in ConnContext; we mutate it here during the handshake.
+	if connState, ok := hello.Context().Value(handlers.TLSConnStateKey{}).(*handlers.TLSConnState); ok && connState != nil {
+		connState.SNI = serverName
+	}
+
+	mtlsDomainConfig := r.config.GetMtlsDomainConfig(serverName)
+	if mtlsDomainConfig == nil {
+		// Not an mTLS domain, use base config
+		return baseConfig, nil
+	}
+
+	// mTLS domain — require client certificate and record the state.
+	if connState, ok := hello.Context().Value(handlers.TLSConnStateKey{}).(*handlers.TLSConnState); ok && connState != nil {
+		connState.ClientCertRequired = true
+		connState.MtlsDomain = mtlsDomainConfig.Domain
+	}
+
+	mtlsConfig := baseConfig.Clone()
+	mtlsConfig.ClientAuth = tls.RequireAndVerifyClientCert
+	mtlsConfig.ClientCAs = mtlsDomainConfig.CAPool
+
+	return mtlsConfig, nil
 }
 
 func (r *Router) serveHTTP(server *http.Server, errChan chan error) error {

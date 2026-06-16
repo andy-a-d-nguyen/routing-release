@@ -1,12 +1,14 @@
 package integration
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io"
 	"math/rand"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -191,6 +193,65 @@ func (s *testState) newGetRequest(url string) *http.Request {
 	return req
 }
 
+// newMtlsGetRequest creates a GET request for mTLS domains (*.apps.mtls.internal).
+// It uses a custom dialer to connect to 127.0.0.1 while preserving the original
+// hostname for TLS SNI, which is required for GoRouter's SNI/Host validation.
+// This helper returns a specialized client that should be used instead of testState.client.
+func (s *testState) newMtlsGetRequest(url string) (*http.Request, *http.Client) {
+	req, err := http.NewRequest("GET", url, nil)
+	Expect(err).NotTo(HaveOccurred())
+
+	// Parse the original hostname for SNI
+	originalHost := req.URL.Hostname()
+	port := s.cfg.SSLPort
+
+	// Get the base transport to access current TLS config (including any client certs set by tests)
+	baseTransport := s.client.Transport.(*http.Transport)
+
+	// Create custom transport with dialer that connects to 127.0.0.1 but uses original hostname for SNI
+	transport := &http.Transport{
+		DialTLSContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+			// Read certificates at dial time (not at closure creation time) so we get
+			// any certificates that tests set after calling newMtlsGetRequest()
+			currentCerts := baseTransport.TLSClientConfig.Certificates
+
+			// Create TLS config for this connection
+			tlsConfig := &tls.Config{
+				ServerName:         originalHost, // SNI uses original hostname
+				RootCAs:            baseTransport.TLSClientConfig.RootCAs,
+				Certificates:       currentCerts, // Use current certificates from baseTransport
+				InsecureSkipVerify: true,         // Skip cert verification since we connect to 127.0.0.1
+			}
+
+			// Create a plain dialer for the TCP connection
+			netDialer := &net.Dialer{}
+			rawConn, err := netDialer.DialContext(ctx, network, fmt.Sprintf("127.0.0.1:%d", port))
+			if err != nil {
+				return nil, err
+			}
+
+			// Wrap with TLS
+			tlsConn := tls.Client(rawConn, tlsConfig)
+
+			// Perform handshake
+			if err := tlsConn.HandshakeContext(ctx); err != nil {
+				rawConn.Close()
+				return nil, err
+			}
+
+			return tlsConn, nil
+		},
+	}
+
+	// Create a new client with the custom transport
+	client := &http.Client{
+		Transport: transport,
+		Timeout:   s.client.Timeout,
+	}
+
+	return req, client
+}
+
 func (s *testState) register(backend *httptest.Server, routeURI string) {
 	s.registerAsTLS(backend, routeURI, "")
 }
@@ -243,6 +304,105 @@ func (s *testState) registerWithInternalRouteService(appBackend, routeServiceSer
 		StaleThresholdInSeconds: 10,
 		RouteServiceURL:         fmt.Sprintf("https://%s:%d", internalRouteServiceHostname, gorouterPort),
 		PrivateInstanceID:       fmt.Sprintf("%x", rand.Int31()),
+	}
+	s.registerAndWait(rm)
+}
+
+func (s *testState) registerWithAccessRules(backend *httptest.Server, routeURI string, accessRules map[string]interface{}) {
+	_, backendPort := hostnameAndPort(backend.Listener.Addr().String())
+
+	// Build route policy sources from map (using RFC-compliant format)
+	var accessRulesList []string
+	if apps, ok := accessRules["apps"].([]string); ok {
+		for _, app := range apps {
+			accessRulesList = append(accessRulesList, fmt.Sprintf("cf:app:%s", app))
+		}
+	}
+	if spaces, ok := accessRules["spaces"].([]string); ok {
+		for _, space := range spaces {
+			accessRulesList = append(accessRulesList, fmt.Sprintf("cf:space:%s", space))
+		}
+	}
+	if orgs, ok := accessRules["orgs"].([]string); ok {
+		for _, org := range orgs {
+			accessRulesList = append(accessRulesList, fmt.Sprintf("cf:org:%s", org))
+		}
+	}
+	if any, ok := accessRules["any"].(bool); ok && any {
+		accessRulesList = append(accessRulesList, "cf:any")
+	}
+
+	// Join route policy sources into comma-separated string
+	accessRulesStr := ""
+	if len(accessRulesList) > 0 {
+		accessRulesStr = accessRulesList[0]
+		for i := 1; i < len(accessRulesList); i++ {
+			accessRulesStr = fmt.Sprintf("%s,%s", accessRulesStr, accessRulesList[i])
+		}
+	}
+
+	rm := mbus.RegistryMessage{
+		Host:                    "127.0.0.1",
+		Port:                    uint16(backendPort),
+		Uris:                    []route.Uri{route.Uri(routeURI)},
+		StaleThresholdInSeconds: 10,
+		PrivateInstanceID:       fmt.Sprintf("%x", rand.Int31()),
+		Options: mbus.RegistryMessageOpts{
+			RoutePolicyScope:   "any", // Default to any scope
+			RoutePolicySources: accessRulesStr,
+		},
+	}
+	s.registerAndWait(rm)
+}
+
+// registerWithScopeAndAccessRules registers a route with RFC-compliant access control.
+// scope: "any", "org", or "space"
+// accessRules: map with "apps", "spaces", "orgs", or "any" keys
+// tags: endpoint tags like "organization_id" and "space_id"
+func (s *testState) registerWithScopeAndAccessRules(backend *httptest.Server, routeURI string, scope string, accessRules map[string]interface{}, tags map[string]string) {
+	_, backendPort := hostnameAndPort(backend.Listener.Addr().String())
+
+	// Build route policy sources from map
+	var accessRulesList []string
+	if apps, ok := accessRules["apps"].([]string); ok {
+		for _, app := range apps {
+			accessRulesList = append(accessRulesList, fmt.Sprintf("cf:app:%s", app))
+		}
+	}
+	if spaces, ok := accessRules["spaces"].([]string); ok {
+		for _, space := range spaces {
+			accessRulesList = append(accessRulesList, fmt.Sprintf("cf:space:%s", space))
+		}
+	}
+	if orgs, ok := accessRules["orgs"].([]string); ok {
+		for _, org := range orgs {
+			accessRulesList = append(accessRulesList, fmt.Sprintf("cf:org:%s", org))
+		}
+	}
+	if any, ok := accessRules["any"].(bool); ok && any {
+		accessRulesList = append(accessRulesList, "cf:any")
+	}
+
+	// Join route policy sources into comma-separated string
+	accessRulesStr := ""
+	if len(accessRulesList) > 0 {
+		accessRulesStr = accessRulesList[0]
+		for i := 1; i < len(accessRulesList); i++ {
+			accessRulesStr = fmt.Sprintf("%s,%s", accessRulesStr, accessRulesList[i])
+		}
+	}
+
+	rm := mbus.RegistryMessage{
+		Host:                    "127.0.0.1",
+		Port:                    uint16(backendPort),
+		Uris:                    []route.Uri{route.Uri(routeURI)},
+		StaleThresholdInSeconds: 10,
+		PrivateInstanceID:       fmt.Sprintf("%x", rand.Int31()),
+		Tags:                    tags,
+		Options: mbus.RegistryMessageOpts{
+			RoutePolicyScope:   scope,
+			RoutePolicySources: accessRulesStr,
+		},
 	}
 	s.registerAndWait(rm)
 }
@@ -308,7 +468,7 @@ func (s *testState) StartGorouterOrFail() {
 
 func (s *testState) StopAndCleanup() {
 	// Stop router before NATS to prevent subscriber's ClosedCB from
-	// firing log.Fatal → os.Exit(1), which kills the test proc.
+	// firing log.Fatal → os.Exit(1), which kills the test proc
 	if s.gorouterSession != nil && s.gorouterSession.ExitCode() == -1 {
 		Eventually(s.gorouterSession.Terminate(), 5).Should(Exit(0))
 	}

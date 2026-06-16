@@ -15,6 +15,7 @@ import (
 	router_http "code.cloudfoundry.org/gorouter/common/http"
 	"code.cloudfoundry.org/gorouter/config"
 	"code.cloudfoundry.org/gorouter/handlers"
+	"code.cloudfoundry.org/gorouter/handlers/postselection"
 	log "code.cloudfoundry.org/gorouter/logger"
 	"code.cloudfoundry.org/gorouter/metrics"
 	"code.cloudfoundry.org/gorouter/proxy/fails"
@@ -76,6 +77,7 @@ func NewProxyRoundTripper(
 	errHandler errorHandler,
 	routeServicesTransport http.RoundTripper,
 	cfg *config.Config,
+	postSelectionPipeline *postselection.PostSelectionPipeline,
 ) ProxyRoundTripper {
 
 	return &roundTripper{
@@ -86,6 +88,7 @@ func NewProxyRoundTripper(
 		errorHandler:           errHandler,
 		routeServicesTransport: routeServicesTransport,
 		config:                 cfg,
+		postSelectionPipeline:  postSelectionPipeline,
 	}
 }
 
@@ -97,6 +100,7 @@ type roundTripper struct {
 	errorHandler           errorHandler
 	routeServicesTransport http.RoundTripper
 	config                 *config.Config
+	postSelectionPipeline  *postselection.PostSelectionPipeline
 }
 
 func (rt *roundTripper) RoundTrip(originalRequest *http.Request) (*http.Response, error) {
@@ -192,6 +196,35 @@ func (rt *roundTripper) RoundTrip(originalRequest *http.Request) (*http.Response
 			logger = logger.With(slog.Group("route-endpoint", endpoint.ToLogData()...))
 			triedEndpoints[endpoint.CanonicalAddr()] = true
 			reqInfo.RouteEndpoint = endpoint
+
+			// ── Post-selection authorization ──────────────────────────────────────
+			// Run post-selection authorization pipeline after endpoint selection but
+			// before making the backend request. This enforces RFC-compliant strict
+			// post-selection scope and route policies checking.
+			if rt.postSelectionPipeline != nil {
+				if authErr := rt.postSelectionPipeline.Run(endpoint, reqInfo); authErr != nil {
+					// Authorization failed - populate AuthResult for access logs
+					if authError, ok := authErr.(*postselection.AuthError); ok {
+						reqInfo.AuthResult = &handlers.AuthResult{
+							Outcome:      "denied",
+							Rule:         authError.Rule,
+							DeniedReason: authError.Reason,
+						}
+
+						// Return authorization error - will be converted to 403 by error handler
+						return nil, authErr
+					}
+
+					// Unknown error type - still populate AuthResult for logging
+					reqInfo.AuthResult = &handlers.AuthResult{
+						Outcome:      "denied",
+						Rule:         "unknown_error",
+						DeniedReason: authErr.Error(),
+					}
+
+					return nil, authErr
+				}
+			}
 
 			logger.Debug("backend", slog.Int("attempt", attempt))
 			if endpoint.IsTLS() {
@@ -337,7 +370,13 @@ func (rt *roundTripper) RoundTrip(originalRequest *http.Request) (*http.Response
 	}
 
 	if err != nil {
-		rt.errorHandler.HandleError(reqInfo.ProxyResponseWriter, err)
+		// For AuthErrors, skip the internal error handler so the ReverseProxy's
+		// ErrorHandler can write the correct HTTP status (e.g. 403 Forbidden).
+		// Running the internal handler first would write a 502 and call Done(),
+		// committing the response before the ReverseProxy's ErrorHandler runs.
+		if _, isAuthErr := err.(*postselection.AuthError); !isAuthErr {
+			rt.errorHandler.HandleError(reqInfo.ProxyResponseWriter, err)
+		}
 		if handlers.IsWebSocketUpgrade(request) {
 			rt.combinedReporter.CaptureWebSocketFailure()
 		}

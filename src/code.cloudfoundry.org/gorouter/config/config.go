@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net"
 	"net/url"
 	"os"
 	"runtime"
@@ -36,6 +37,10 @@ const (
 	REDACT_QUERY_PARMS_NONE   string = "none"
 	REDACT_QUERY_PARMS_ALL    string = "all"
 	REDACT_QUERY_PARMS_HASH   string = "hash"
+
+	// XFCC format constants for mTLS domains
+	XFCC_FORMAT_RAW   string = "raw"   // Full base64-encoded certificate
+	XFCC_FORMAT_ENVOY string = "envoy" // Hash=<sha256>;Subject="<DN>" format
 )
 
 var (
@@ -45,6 +50,7 @@ var (
 	AllowedShardingModes            = []string{SHARD_ALL, SHARD_SEGMENTS, SHARD_SHARED_AND_SEGMENTS}
 	AllowedForwardedClientCertModes = []string{ALWAYS_FORWARD, FORWARD, SANITIZE_SET}
 	AllowedQueryParmRedactionModes  = []string{REDACT_QUERY_PARMS_NONE, REDACT_QUERY_PARMS_ALL, REDACT_QUERY_PARMS_HASH}
+	AllowedXFCCFormats              = []string{XFCC_FORMAT_RAW, XFCC_FORMAT_ENVOY}
 )
 
 type StringSet map[string]struct{}
@@ -368,6 +374,17 @@ func InitClientCertMetadataRules(rules []VerifyClientCertificateMetadataRule, ce
 	return nil
 }
 
+// MtlsDomainConfig defines TLS settings for a specific domain that requires mutual TLS
+type MtlsDomainConfig struct {
+	Domain              string         `yaml:"domain"`
+	CAPool              *x509.CertPool `yaml:"-"`
+	CACerts             string         `yaml:"ca_certs"`
+	ForwardedClientCert string         `yaml:"forwarded_client_cert"`
+	XFCCFormat          string         `yaml:"xfcc_format"` // "raw" (default) or "envoy"
+	// Computed fields
+	RequireClientCert bool `yaml:"-"` // Always true for mTLS domains
+}
+
 type Config struct {
 	Status                         StatusConfig      `yaml:"status,omitempty"`
 	Nats                           NatsConfig        `yaml:"nats,omitempty"`
@@ -393,6 +410,13 @@ type Config struct {
 	CAPool                         *x509.CertPool    `yaml:"-"`
 	ClientCACerts                  string            `yaml:"client_ca_certs,omitempty"`
 	ClientCAPool                   *x509.CertPool    `yaml:"-"`
+
+	// Domains configures domains that require client certificates (mTLS).
+	// Corresponds to router.domains in the BOSH manifest (RFC: router.domains).
+	// Routes on these domains will require valid instance identity certificates.
+	Domains []MtlsDomainConfig `yaml:"domains,omitempty"`
+	// Computed: map of domain -> config for fast lookup
+	mtlsDomainMap map[string]*MtlsDomainConfig `yaml:"-"`
 
 	SkipSSLValidation        bool     `yaml:"skip_ssl_validation,omitempty"`
 	ForwardedClientCert      string   `yaml:"forwarded_client_cert,omitempty"`
@@ -802,6 +826,9 @@ func (c *Config) Process() error {
 	if err := c.buildClientCertPool(); err != nil {
 		return err
 	}
+	if err := c.processMtlsDomains(); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -902,6 +929,62 @@ func (c *Config) buildClientCertPool() error {
 	return nil
 }
 
+func (c *Config) processMtlsDomains() error {
+	// Initialize mTLS domain map
+	c.mtlsDomainMap = make(map[string]*MtlsDomainConfig)
+
+	for i := range c.Domains {
+		domain := &c.Domains[i]
+		domain.RequireClientCert = true
+
+		// Validate forwarded_client_cert mode
+		if domain.ForwardedClientCert == "" {
+			domain.ForwardedClientCert = SANITIZE_SET // Default to most secure
+		}
+		if !slices.Contains(AllowedForwardedClientCertModes, domain.ForwardedClientCert) {
+			return fmt.Errorf("domains[%d].forwarded_client_cert must be one of %v",
+				i, AllowedForwardedClientCertModes)
+		}
+
+		// Validate xfcc_format
+		if domain.XFCCFormat == "" {
+			domain.XFCCFormat = XFCC_FORMAT_RAW // Default to raw for backwards compatibility
+		}
+		if !slices.Contains(AllowedXFCCFormats, domain.XFCCFormat) {
+			return fmt.Errorf("domains[%d].xfcc_format must be one of %v",
+				i, AllowedXFCCFormats)
+		}
+		if domain.XFCCFormat != XFCC_FORMAT_RAW && domain.ForwardedClientCert == ALWAYS_FORWARD {
+			return fmt.Errorf("domains[%d].xfcc_format has no effect when forwarded_client_cert is 'always_forward'; remove xfcc_format or change forwarded_client_cert to 'sanitize_set'",
+				i)
+		}
+
+		// Build CA pool for this domain
+		if domain.CACerts != "" {
+			pool := x509.NewCertPool()
+			if !pool.AppendCertsFromPEM([]byte(domain.CACerts)) {
+				return fmt.Errorf("domains[%d].ca_certs contains invalid certificates", i)
+			}
+			domain.CAPool = pool
+		} else {
+			return fmt.Errorf("domains[%d].ca_certs is required", i)
+		}
+
+		// Validate domain is not empty
+		if domain.Domain == "" {
+			return fmt.Errorf("domains[%d].domain is required", i)
+		}
+
+		// Normalize domain to lowercase for case-insensitive matching (RFC 1035)
+		// Both the map key AND the stored Domain field are lowercased so that
+		// downstream code (e.g., domainMatches) can do case-insensitive comparisons.
+		domain.Domain = strings.ToLower(domain.Domain)
+		c.mtlsDomainMap[domain.Domain] = domain
+	}
+
+	return nil
+}
+
 func convertCipherStringToInt(cipherStrs []string, cipherMap map[string]uint16) ([]uint16, error) {
 	ciphers := []uint16{}
 	for _, cipher := range cipherStrs {
@@ -935,6 +1018,45 @@ func (c *Config) NatsServers() []string {
 
 func (c *Config) RoutingApiEnabled() bool {
 	return (c.RoutingApi.Uri != "") && (c.RoutingApi.Port != 0)
+}
+
+// GetMtlsDomainConfig returns the mTLS domain configuration for a given host.
+// It checks for exact matches first, then wildcard matches (e.g., *.apps.mtls.internal).
+// Matching is case-insensitive per RFC 1035 (DNS hostnames).
+// Returns nil if the host is not an mTLS domain.
+func (c *Config) GetMtlsDomainConfig(host string) *MtlsDomainConfig {
+	// Strip port if present (e.g., "app.example.com:443" → "app.example.com")
+	// This ensures consistent matching regardless of whether clients include explicit ports
+	if h, _, err := net.SplitHostPort(host); err == nil {
+		host = h
+	}
+
+	// Normalize to lowercase for case-insensitive matching (RFC 1035)
+	host = strings.ToLower(host)
+
+	// Check exact match first
+	if cfg, ok := c.mtlsDomainMap[host]; ok {
+		return cfg
+	}
+	// Check wildcard match (e.g., *.apps.mtls.internal)
+	// Wildcard patterns only match a single DNS label, not multiple levels.
+	// e.g., "app.domain.com" matches "*.domain.com" but "deep.sub.domain.com" does not.
+	// Note: SplitN(host, ".", 2) guarantees parts[0] never contains a dot, so
+	// multi-level subdomain protection is inherent — only the first label is stripped.
+	parts := strings.SplitN(host, ".", 2)
+	if len(parts) == 2 {
+		suffix := parts[1]
+		wildcardDomain := "*." + suffix
+		if cfg, ok := c.mtlsDomainMap[wildcardDomain]; ok {
+			return cfg
+		}
+	}
+	return nil
+}
+
+// IsMtlsDomain returns true if the given host is configured as an mTLS domain
+func (c *Config) IsMtlsDomain(host string) bool {
+	return c.GetMtlsDomainConfig(host) != nil
 }
 
 func (c *Config) Initialize(configYAML []byte) error {

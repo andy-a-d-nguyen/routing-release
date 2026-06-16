@@ -24,6 +24,7 @@ import (
 	"code.cloudfoundry.org/gorouter/config"
 	"code.cloudfoundry.org/gorouter/errorwriter"
 	"code.cloudfoundry.org/gorouter/handlers"
+	"code.cloudfoundry.org/gorouter/handlers/postselection"
 	log "code.cloudfoundry.org/gorouter/logger"
 	"code.cloudfoundry.org/gorouter/metrics"
 	"code.cloudfoundry.org/gorouter/proxy/fails"
@@ -115,6 +116,15 @@ func NewProxy(
 		IsInstrumented: cfg.SendHttpStartStopClientEvent,
 	}
 
+	// Create post-selection authorization pipeline
+	// This runs after endpoint selection in the round tripper to enforce
+	// RFC-compliant strict scope and route policies checking.
+	postSelectionPipeline := postselection.NewPostSelectionPipeline(
+		logger,
+		postselection.NewMtlsScopeAuth(cfg, logger),
+		postselection.NewMtlsRoutePoliciesAuth(cfg, logger),
+	)
+
 	prt := round_tripper.NewProxyRoundTripper(
 		roundTripperFactory,
 		fails.RetriableClassifiers,
@@ -126,6 +136,7 @@ func NewProxy(
 		},
 		routeServicesTransport,
 		cfg,
+		postSelectionPipeline,
 	)
 
 	rproxy := &httputil.ReverseProxy{
@@ -134,6 +145,9 @@ func NewProxy(
 		FlushInterval:  50 * time.Millisecond,
 		BufferPool:     p.bufferPool,
 		ModifyResponse: p.modifyResponse,
+		ErrorHandler: func(rw http.ResponseWriter, req *http.Request, err error) {
+			handleReverseProxyError(logger, rw, err)
+		},
 	}
 
 	routeServiceHandler := handlers.NewRouteService(routeServiceConfig, registry, logger, errorWriter)
@@ -168,13 +182,17 @@ func NewProxy(
 	n.Use(handlers.NewProtocolCheck(logger, errorWriter, cfg.EnableHTTP2))
 	n.Use(handlers.NewLookup(registry, reporter, logger, errorWriter, cfg.EmptyPoolResponseCode503))
 	n.Use(handlers.NewMaxRequestSize(cfg, logger))
+	n.Use(handlers.NewMtlsSniCheck(cfg, logger))
 	n.Use(handlers.NewClientCert(
 		SkipSanitize(routeServiceHandler.(*handlers.RouteService)),
 		ForceDeleteXFCCHeader(routeServiceHandler.(*handlers.RouteService), cfg.ForwardedClientCert, logger),
 		cfg.ForwardedClientCert,
+		cfg,
 		logger,
 		errorWriter,
 	))
+	n.Use(handlers.NewCfIdentity(cfg))
+	n.Use(handlers.NewMtlsPreAuth(cfg, logger))
 	n.Use(handlers.NewHopByHop(cfg, logger))
 	n.Use(&handlers.XForwardedProto{
 		SkipSanitization:         SkipSanitizeXFP(routeServiceHandler.(*handlers.RouteService)),
@@ -285,6 +303,26 @@ func escapePathAndPreserveSlashes(unescaped string) string {
 	escapedPath = strings.TrimSuffix(escapedPath, "/")
 
 	return escapedPath
+}
+
+// handleReverseProxyError writes an appropriate HTTP error response for errors
+// returned by the backend round tripper. AuthErrors produce the HTTP status
+// code embedded in the error (typically 403 Forbidden). All other errors
+// produce a generic 502 Bad Gateway without leaking internal error details.
+func handleReverseProxyError(logger *slog.Logger, rw http.ResponseWriter, err error) {
+	if authErr, ok := err.(*postselection.AuthError); ok {
+		// Use ClientMessage() to avoid leaking internal rule names or caller identities.
+		rw.WriteHeader(authErr.HTTPStatus)
+		if _, writeErr := rw.Write([]byte(authErr.ClientMessage())); writeErr != nil {
+			logger.Error("failed to write auth error response", log.ErrAttr(writeErr))
+		}
+		return
+	}
+	// Use a generic message to avoid leaking internal error details to the client.
+	rw.WriteHeader(http.StatusBadGateway)
+	if _, writeErr := rw.Write([]byte(http.StatusText(http.StatusBadGateway))); writeErr != nil {
+		logger.Error("failed to write error response", log.ErrAttr(writeErr))
+	}
 }
 
 // RouteServiceDialControl checks if the address is allowed based on the block list.

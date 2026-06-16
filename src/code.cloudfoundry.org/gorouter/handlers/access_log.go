@@ -92,6 +92,17 @@ func (a *accessLog) ServeHTTP(rw http.ResponseWriter, r *http.Request, next http
 
 	alr.LocalAddress = reqInfo.LocalAddress
 
+	// Identity-aware routing authorization fields
+	if reqInfo.CallerIdentity != nil {
+		alr.CallerCFApp = reqInfo.CallerIdentity.AppGUID
+		alr.CallerCFSpace = reqInfo.CallerIdentity.SpaceGUID
+		alr.CallerCFOrg = reqInfo.CallerIdentity.OrgGUID
+	}
+	if reqInfo.AuthResult != nil {
+		alr.RoutePolicy = reqInfo.AuthResult.Rule
+	}
+	alr.TlsSNI = reqInfo.TlsSNI
+
 	a.accessLogger.Log(*alr)
 
 	if panicVal != nil {

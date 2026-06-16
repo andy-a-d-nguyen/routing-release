@@ -23,6 +23,39 @@ type key string
 
 const RequestInfoCtxKey key = "RequestInfo"
 
+// TLSConnStateKey is the context key type for TLSConnState.
+// Exported so router.go can retrieve the pointer during the TLS handshake.
+type TLSConnStateKey struct{}
+
+// TLSConnState captures per-connection TLS handshake state.
+// It is stored in a connection-scoped context via http.Server.ConnContext
+// (set by router.go) and retrieved per-request in authorization handlers.
+type TLSConnState struct {
+	// SNI is the Server Name Indication value from the TLS ClientHello.
+	SNI string
+	// MtlsDomain is the matched mTLS domain name (empty if none matched).
+	MtlsDomain string
+	// ClientCertRequired is true when GoRouter required and validated a client
+	// certificate during the TLS handshake for this connection.
+	ClientCertRequired bool
+}
+
+// SetTLSConnState stores the TLSConnState in a context (for use in ConnContext).
+func SetTLSConnState(ctx context.Context, state *TLSConnState) context.Context {
+	return context.WithValue(ctx, TLSConnStateKey{}, state)
+}
+
+// GetTLSConnectionState retrieves the TLSConnState from the request context.
+// Returns a zero-value TLSConnState (not nil) if none was set (e.g. plain HTTP).
+func GetTLSConnectionState(r *http.Request) TLSConnState {
+	if v := r.Context().Value(TLSConnStateKey{}); v != nil {
+		if state, ok := v.(*TLSConnState); ok && state != nil {
+			return *state
+		}
+	}
+	return TLSConnState{}
+}
+
 type TraceInfo struct {
 	TraceID string
 	SpanID  string
@@ -81,6 +114,17 @@ type RequestInfo struct {
 	TraceInfo TraceInfo
 
 	BackendReqHeaders http.Header
+
+	// CallerIdentity contains the identity of the calling application extracted
+	// from the client certificate. Will be nil for requests without identity.
+	CallerIdentity *CallerIdentity
+
+	// AuthResult captures the outcome of identity-aware routing authorization.
+	// Will be nil if no authorization was performed.
+	AuthResult *AuthResult
+
+	// TlsSNI is the SNI value used during the TLS handshake (for RTR log on 421).
+	TlsSNI string
 }
 
 func (r *RequestInfo) ProvideTraceInfo() (TraceInfo, error) {

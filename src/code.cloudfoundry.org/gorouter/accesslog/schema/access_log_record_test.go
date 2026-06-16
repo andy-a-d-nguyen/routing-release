@@ -403,6 +403,59 @@ var _ = Describe("AccessLogRecord", func() {
 				})
 			})
 
+			Context("to [tls_sni caller_cf_app caller_cf_space caller_cf_org route_policy]", func() {
+				It("includes the fields with their values when set", func() {
+					record.ExtraFields = []string{"tls_sni", "caller_cf_app", "caller_cf_space", "caller_cf_org", "route_policy"}
+					record.TlsSNI = "backend.apps.internal"
+					record.CallerCFApp = "app-guid-123"
+					record.CallerCFSpace = "space-guid-456"
+					record.CallerCFOrg = "org-guid-789"
+					record.RoutePolicy = "cf:app:app-guid-123"
+
+					var b bytes.Buffer
+					_, err := record.WriteTo(&b)
+					Expect(err).ToNot(HaveOccurred())
+
+					r := b.String()
+					Expect(r).To(ContainSubstring(`tls_sni:"backend.apps.internal"`))
+					Expect(r).To(ContainSubstring(`caller_cf_app:"app-guid-123"`))
+					Expect(r).To(ContainSubstring(`caller_cf_space:"space-guid-456"`))
+					Expect(r).To(ContainSubstring(`caller_cf_org:"org-guid-789"`))
+					Expect(r).To(ContainSubstring(`route_policy:"cf:app:app-guid-123"`))
+				})
+
+				It("emits '-' for each field when values are empty", func() {
+					record.ExtraFields = []string{"tls_sni", "caller_cf_app", "caller_cf_space", "caller_cf_org", "route_policy"}
+
+					var b bytes.Buffer
+					_, err := record.WriteTo(&b)
+					Expect(err).ToNot(HaveOccurred())
+
+					r := b.String()
+					Expect(r).To(ContainSubstring(`tls_sni:"-"`))
+					Expect(r).To(ContainSubstring(`caller_cf_app:"-"`))
+					Expect(r).To(ContainSubstring(`caller_cf_space:"-"`))
+					Expect(r).To(ContainSubstring(`caller_cf_org:"-"`))
+					Expect(r).To(ContainSubstring(`route_policy:"-"`))
+				})
+
+				It("does not include the fields when not in ExtraFields", func() {
+					record.TlsSNI = "backend.apps.internal"
+					record.CallerCFApp = "app-guid-123"
+
+					var b bytes.Buffer
+					_, err := record.WriteTo(&b)
+					Expect(err).ToNot(HaveOccurred())
+
+					r := b.String()
+					Expect(r).NotTo(ContainSubstring("tls_sni:"))
+					Expect(r).NotTo(ContainSubstring("caller_cf_app:"))
+					Expect(r).NotTo(ContainSubstring("caller_cf_space:"))
+					Expect(r).NotTo(ContainSubstring("caller_cf_org:"))
+					Expect(r).NotTo(ContainSubstring("route_policy:"))
+				})
+			})
+
 			Context("to [foobarbazz]", func() {
 				It("ignores it", func() {
 					record.ExtraFields = []string{"foobarbazz"}
