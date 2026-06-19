@@ -44,7 +44,7 @@ require (
 
 require (
 	code.cloudfoundry.org/cfhttp/v2 v2.82.0 // indirect
-	code.cloudfoundry.org/diego-db-helpers v0.3.0 // indirect
+	code.cloudfoundry.org/diego-db-helpers v0.4.0 // indirect
 	code.cloudfoundry.org/durationjson v0.77.0 // indirect
 	code.cloudfoundry.org/eventhub v0.77.0 // indirect
 	code.cloudfoundry.org/go-diodes v0.0.0-20260615142411-472d6bcdb3c6 // indirect
