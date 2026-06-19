@@ -3,7 +3,7 @@ module routing_utils/nats_client
 go 1.26.4
 
 require (
-	code.cloudfoundry.org/tlsconfig v0.58.0
+	code.cloudfoundry.org/tlsconfig v0.60.0
 	github.com/nats-io/nats.go v1.52.0
 	gopkg.in/yaml.v3 v3.0.1
 )
