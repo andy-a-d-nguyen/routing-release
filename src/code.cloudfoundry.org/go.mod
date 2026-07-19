@@ -5,15 +5,15 @@ go 1.26.4
 replace github.com/cactus/go-statsd-client => github.com/cactus/go-statsd-client v2.0.2-0.20150911070441-6fa055a7b594+incompatible
 
 require (
-	code.cloudfoundry.org/clock v1.78.0
-	code.cloudfoundry.org/debugserver v0.105.0
-	code.cloudfoundry.org/diego-logging-client v0.115.0
+	code.cloudfoundry.org/clock v1.79.0
+	code.cloudfoundry.org/debugserver v0.106.0
+	code.cloudfoundry.org/diego-logging-client v0.116.0
 	code.cloudfoundry.org/go-metric-registry v0.0.0-20260708091250-9b8a8be7e306
-	code.cloudfoundry.org/lager/v3 v3.77.0
-	code.cloudfoundry.org/localip v0.79.0
-	code.cloudfoundry.org/locket v1.4.0
-	code.cloudfoundry.org/routing-api v0.5.0
-	code.cloudfoundry.org/tlsconfig v0.61.0
+	code.cloudfoundry.org/lager/v3 v3.78.0
+	code.cloudfoundry.org/localip v0.80.0
+	code.cloudfoundry.org/locket v1.5.0
+	code.cloudfoundry.org/routing-api v0.6.0
+	code.cloudfoundry.org/tlsconfig v0.62.0
 	github.com/armon/go-proxyproto v0.1.0
 	github.com/cloudfoundry/cf-test-helpers/v2 v2.13.0
 	github.com/cloudfoundry/custom-cats-reporters v0.0.2
@@ -31,7 +31,7 @@ require (
 	github.com/urfave/cli v1.22.17
 	github.com/urfave/negroni/v3 v3.1.1
 	github.com/vito/go-sse v1.1.3
-	go.step.sm/crypto v0.84.1
+	go.step.sm/crypto v0.85.0
 	go.uber.org/zap v1.28.0
 	go.uber.org/zap/exp v0.3.0
 	golang.org/x/crypto v0.54.0
@@ -43,10 +43,10 @@ require (
 )
 
 require (
-	code.cloudfoundry.org/cfhttp/v2 v2.85.0 // indirect
-	code.cloudfoundry.org/diego-db-helpers v0.6.0 // indirect
-	code.cloudfoundry.org/durationjson v0.80.0 // indirect
-	code.cloudfoundry.org/eventhub v0.80.0 // indirect
+	code.cloudfoundry.org/cfhttp/v2 v2.86.0 // indirect
+	code.cloudfoundry.org/diego-db-helpers v0.7.0 // indirect
+	code.cloudfoundry.org/durationjson v0.81.0 // indirect
+	code.cloudfoundry.org/eventhub v0.81.0 // indirect
 	code.cloudfoundry.org/go-diodes v0.0.0-20260706112827-32a910f327a2 // indirect
 	code.cloudfoundry.org/go-loggregator/v9 v9.2.1 // indirect
 	filippo.io/edwards25519 v1.2.0 // indirect
@@ -99,8 +99,8 @@ require (
 	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/text v0.40.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260706201446-f0a921348800 // indirect
-	google.golang.org/grpc v1.82.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260715232425-e75dac1f907d // indirect
+	google.golang.org/grpc v1.82.1 // indirect
 	gopkg.in/alexcesaro/statsd.v2 v2.0.0 // indirect
 	gorm.io/driver/mysql v1.6.0 // indirect
 	gorm.io/driver/postgres v1.6.0 // indirect
