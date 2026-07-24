@@ -498,6 +498,24 @@ var _ = Describe("Proxy", func() {
 			})
 		})
 
+		Describe("Forwarded", func() {
+			It("passes a client-supplied Forwarded header through verbatim", func() {
+				req.Header.Set("Forwarded", "for=1.2.3.4;proto=https;host=example.com")
+				Expect(getProxiedHeaders(req).Get("Forwarded")).To(Equal("for=1.2.3.4;proto=https;host=example.com"))
+			})
+
+			It("preserves multiple Forwarded header values", func() {
+				req.Header.Add("Forwarded", "for=1.2.3.4")
+				req.Header.Add("Forwarded", "for=5.6.7.8")
+				Expect(getProxiedHeaders(req).Values("Forwarded")).To(Equal([]string{"for=1.2.3.4", "for=5.6.7.8"}))
+			})
+
+			It("does not add a Forwarded header when the client does not send one", func() {
+				_, ok := getProxiedHeaders(req)["Forwarded"]
+				Expect(ok).To(BeFalse())
+			})
+		})
+
 		Describe("X-Forwarded-Host", func() {
 			Context("for expect-100-continue requests", func() {
 				It("preserves the X-Forwarded-Host header", func() {
