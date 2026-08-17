@@ -496,6 +496,19 @@ var _ = Describe("Proxy", func() {
 					Expect(getProxiedHeaders(req).Get("X-Forwarded-For")).To(Equal("1.2.3.4, 127.0.0.1"))
 				})
 			})
+			Context("when the header is already set as multiple separate lines", func() {
+				It("appends the client IP and preserves all prior values", func() {
+					// A request can arrive with X-Forwarded-For split across
+					// multiple header lines, e.g. when a proxy in front of
+					// gorouter appends its own line in addition to one the
+					// client or an upstream hop already set. All lines must be
+					// preserved.
+					req.Header.Add("X-Forwarded-For", "18.157.121.255")
+					req.Header.Add("X-Forwarded-For", "18.159.86.86")
+					Expect(getProxiedHeaders(req).Get("X-Forwarded-For")).
+						To(Equal("18.157.121.255, 18.159.86.86, 127.0.0.1"))
+				})
+			})
 		})
 
 		Describe("X-Forwarded-Host", func() {
