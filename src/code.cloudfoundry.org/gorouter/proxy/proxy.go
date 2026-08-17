@@ -154,7 +154,12 @@ func NewProxy(
 				r.Out.Header.Set("X-Forwarded-Host", host)
 			}
 			if clientIP, _, err := net.SplitHostPort(r.In.RemoteAddr); err == nil {
-				if prior := r.In.Header.Get("X-Forwarded-For"); prior != "" {
+				// Join ALL inbound X-Forwarded-For header lines, not just the
+				// first. A request can legitimately arrive with multiple
+				// X-Forwarded-For header lines (e.g. a proxy in front of gorouter
+				// appends its own line in addition to any the client/upstream
+				// already set).
+				if prior := strings.Join(r.In.Header.Values("X-Forwarded-For"), ", "); prior != "" {
 					r.Out.Header.Set("X-Forwarded-For", prior+", "+clientIP)
 				} else {
 					r.Out.Header.Set("X-Forwarded-For", clientIP)
