@@ -146,6 +146,9 @@ func NewProxy(
 			// r.Out before calling this function. Restore them to replicate the
 			// behavior Director had:
 			// - Forwarded: pass the client-supplied value(s) through verbatim.
+			//   Assigned directly rather than via Set so multiple field values
+			//   and their order survive, as RFC 7239 allows the list to span
+			//   several of them.
 			// - X-Forwarded-Proto: copy the value already set by the XForwardedProto middleware.
 			// - X-Forwarded-Host: preserve whatever the client/middleware set.
 			// - X-Forwarded-For: append the client IP from r.In.RemoteAddr.
