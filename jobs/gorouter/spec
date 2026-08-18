@@ -386,11 +386,12 @@ properties:
     description: "If set gorouter reuses backend connection for requests expecting 100-Continue"
     default: false
   router.force_forwarded_proto_https:
-    description: "Enables setting X-Forwarded-Proto header if SSL termination happened upstream and incorrectly set the header value. When this property is set to true gorouter sets the header X-Forwarded-Proto to https. When this value set to false, gorouter set the header X-Forwarded-Proto to the protocol of the incoming request"
+    description: "Enables setting X-Forwarded-Proto header if SSL termination happened upstream and incorrectly set the header value. When this property is set to true gorouter sets the header X-Forwarded-Proto to https. When this value set to false, gorouter set the header X-Forwarded-Proto to the protocol of the incoming request. A client-supplied RFC 7239 Forwarded header is replaced with the client IP and scheme Gorouter observed, since backends may prefer its proto= parameter over X-Forwarded-Proto"
     default: false
   router.sanitize_forwarded_proto:
     description: |
       When true, Gorouter will strip the X-Forwarded-Proto header when present in client request and set it to the scheme of the request.
+      A client-supplied RFC 7239 Forwarded header is replaced with the client IP and scheme Gorouter observed, since backends may prefer its proto= parameter over X-Forwarded-Proto.
       When false, Gorouter will pass through the value of this header.
       When force_forwarded_proto_https: true, this property will be ignored.
       Otherwise,  we recommend setting the property to true if Gorouter is the first component to terminate TLS, and set to false when your load balancer is terminating TLS and setting the X-Forwarded-Proto header.
