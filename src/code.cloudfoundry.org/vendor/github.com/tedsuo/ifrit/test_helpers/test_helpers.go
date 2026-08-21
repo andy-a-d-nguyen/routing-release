@@ -13,8 +13,8 @@ type PingChan chan Ping
 
 type Ping struct{}
 
-var ErrPingerExitedFromPing = errors.New("pinger exited with a ping")
-var ErrPingerExitedFromSignal = errors.New("pinger exited with a signal")
+var PingerExitedFromPing = errors.New("pinger exited with a ping")
+var PingerExitedFromSignal = errors.New("pinger exited with a signal")
 
 func (p PingChan) Load(err error) (ifrit.Runner, bool) {
 	return p, true
@@ -24,18 +24,18 @@ func (p PingChan) Run(sigChan <-chan os.Signal, ready chan<- struct{}) error {
 	close(ready)
 	select {
 	case <-sigChan:
-		return ErrPingerExitedFromSignal
+		return PingerExitedFromSignal
 	case p <- Ping{}:
-		return ErrPingerExitedFromPing
+		return PingerExitedFromPing
 	}
 }
 
-// ErrNoReadyRunner exits without closing the ready chan
-var ErrNoReadyRunner = ifrit.RunFunc(func(sigChan <-chan os.Signal, ready chan<- struct{}) error {
-	return ErrNoReadyExitedNormally
+// NoReadyRunner exits without closing the ready chan
+var NoReadyRunner = ifrit.RunFunc(func(sigChan <-chan os.Signal, ready chan<- struct{}) error {
+	return NoReadyExitedNormally
 })
 
-var ErrNoReadyExitedNormally = errors.New("no ready exited normally")
+var NoReadyExitedNormally = errors.New("no ready exited normally")
 
 // SignalRecoder records all signals received, and exits on a set of signals.
 type SignalRecoder struct {
