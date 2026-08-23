@@ -59,7 +59,7 @@ code.cloudfoundry.org/locket/lock
 code.cloudfoundry.org/locket/metrics
 code.cloudfoundry.org/locket/metrics/helpers
 code.cloudfoundry.org/locket/models
-# code.cloudfoundry.org/routing-api v0.11.0
+# code.cloudfoundry.org/routing-api v0.12.0
 ## explicit; go 1.26.4
 code.cloudfoundry.org/routing-api
 code.cloudfoundry.org/routing-api/admin
@@ -157,8 +157,6 @@ github.com/facebookgo/limitgroup
 # github.com/facebookgo/muster v0.0.0-20150708232844-fd3d7953fd52
 ## explicit
 github.com/facebookgo/muster
-# github.com/fsnotify/fsnotify v1.10.1
-## explicit; go 1.23
 # github.com/go-logr/logr v1.4.4
 ## explicit; go 1.18
 github.com/go-logr/logr

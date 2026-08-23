@@ -620,8 +620,8 @@ code.cloudfoundry.org/localip v0.85.0 h1:3jn9Sg9RJ/lgBV9e+MbVqxhCGLBsk/0nMggO3Ce
 code.cloudfoundry.org/localip v0.85.0/go.mod h1:jZNiQjiT2JBYvvUVk60dpAL9YjHV0dxi25fUr2KoHII=
 code.cloudfoundry.org/locket v1.7.0 h1:mw3aqETmPOYmYujUXdmRoOC98FrFtp8y7DlDqKezt2w=
 code.cloudfoundry.org/locket v1.7.0/go.mod h1:Ry3jV9bOnUY7cj58CMjAJnqLt428reVD0dJiX38eOK8=
-code.cloudfoundry.org/routing-api v0.11.0 h1:BhNsH3vzeunCaOwjeGW70ttdRxZ5ElncsCLnTWYUR+c=
-code.cloudfoundry.org/routing-api v0.11.0/go.mod h1:kqjnZuIjR0zR6slOvdv3AG5z/BeAcocYirUESSqoMCk=
+code.cloudfoundry.org/routing-api v0.12.0 h1:rP5YXDWI3EP5fOHCIDFTDZm9RQjGuvbvtZyQjK18uWw=
+code.cloudfoundry.org/routing-api v0.12.0/go.mod h1:Hr+sOi+kT+43DzYpQxH32BleEpU0mDl3DcM98ULNpk8=
 code.cloudfoundry.org/tlsconfig v0.65.0 h1:mPga0pCfQp9nTHgXizFrfpsWmmcGHIUgD+cYb8KPpmw=
 code.cloudfoundry.org/tlsconfig v0.65.0/go.mod h1:orvSwt5ytEO49rjIY+JLGcbIoCCbVbcowHHTbheYToI=
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
