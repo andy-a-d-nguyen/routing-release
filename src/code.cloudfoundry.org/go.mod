@@ -14,7 +14,7 @@ require (
 	code.cloudfoundry.org/go-metric-registry v0.0.0-20260818090611-9aea002e9e4c
 	code.cloudfoundry.org/lager/v3 v3.82.0
 	code.cloudfoundry.org/localip v0.85.0
-	code.cloudfoundry.org/locket v1.7.0
+	code.cloudfoundry.org/locket v1.9.0
 	code.cloudfoundry.org/routing-api v0.12.0
 	code.cloudfoundry.org/tlsconfig v0.65.0
 	github.com/armon/go-proxyproto v0.1.0

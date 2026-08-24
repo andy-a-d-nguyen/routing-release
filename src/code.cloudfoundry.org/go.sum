@@ -618,8 +618,8 @@ code.cloudfoundry.org/lager/v3 v3.82.0 h1:/iTYAOg02MbOaq/Sh4jdka5IUtUYVN1YYR8GHb
 code.cloudfoundry.org/lager/v3 v3.82.0/go.mod h1:MfEnRvMtBJxBIDRHZKv9s6ssvB5HFnprVLSiwWZlx+s=
 code.cloudfoundry.org/localip v0.85.0 h1:3jn9Sg9RJ/lgBV9e+MbVqxhCGLBsk/0nMggO3CehvPc=
 code.cloudfoundry.org/localip v0.85.0/go.mod h1:jZNiQjiT2JBYvvUVk60dpAL9YjHV0dxi25fUr2KoHII=
-code.cloudfoundry.org/locket v1.7.0 h1:mw3aqETmPOYmYujUXdmRoOC98FrFtp8y7DlDqKezt2w=
-code.cloudfoundry.org/locket v1.7.0/go.mod h1:Ry3jV9bOnUY7cj58CMjAJnqLt428reVD0dJiX38eOK8=
+code.cloudfoundry.org/locket v1.9.0 h1:l4PYeWIWhl8XUKqsMU8SOX1wHFRb9k7BtCuvIYJkAwo=
+code.cloudfoundry.org/locket v1.9.0/go.mod h1:kk2hvwxkRGUDFeY2kepQiNb7vvpA/OJ3BpH7xrO/D24=
 code.cloudfoundry.org/routing-api v0.12.0 h1:rP5YXDWI3EP5fOHCIDFTDZm9RQjGuvbvtZyQjK18uWw=
 code.cloudfoundry.org/routing-api v0.12.0/go.mod h1:Hr+sOi+kT+43DzYpQxH32BleEpU0mDl3DcM98ULNpk8=
 code.cloudfoundry.org/tlsconfig v0.65.0 h1:mPga0pCfQp9nTHgXizFrfpsWmmcGHIUgD+cYb8KPpmw=
